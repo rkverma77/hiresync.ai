@@ -36,14 +36,16 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 
 
     const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
+                        Resume: ${resume || "(No resume provided)"}
+                        Self Description: ${selfDescription || "(No self description provided)"}
                         Job Description: ${jobDescription}
 
-                        IMPORTANT: Generate AT LEAST 8 (and up to 12) technicalQuestions and AT LEAST 8 (and up to 12) behavioralQuestions.
-                        The technical questions should cover a wide range of topics relevant to the job description, including core concepts, tools/technologies, problem solving, system design, coding and debugging.
-                        The behavioral questions should cover a wide range of scenarios such as teamwork, conflict resolution, leadership, handling failure, time management, communication and adaptability.
-                        Do not return fewer than 8 questions in either category.
+                        IMPORTANT INSTRUCTIONS:
+                        - Base the matchScore, skillGaps, technicalQuestions, behavioralQuestions and preparationPlan primarily on the candidate's actual Resume content (and Self Description if provided), comparing it against the Job Description. Do not ignore the resume content - reference the candidate's real skills, tools, projects and experience wherever relevant.
+                        - Generate AT LEAST 8 (and up to 12) technicalQuestions and AT LEAST 8 (and up to 12) behavioralQuestions.
+                        - The technical questions should cover a wide range of topics relevant to the job description, including core concepts, tools/technologies, problem solving, system design, coding and debugging.
+                        - The behavioral questions should cover a wide range of scenarios such as teamwork, conflict resolution, leadership, handling failure, time management, communication and adaptability.
+                        - Do not return fewer than 8 questions in either category.
 `
 
     const response = await ai.models.generateContent({
@@ -113,83 +115,134 @@ const resumeContentSchema = z.object({
 
 /**
  * @name buildResumeDocDefinition
- * @description Converts the structured resume content into a pdfmake document definition.
+ * @description Converts the structured resume content into a polished pdfmake document
+ * definition: a header band with name/title/contact, followed by a two-column body
+ * (left: summary, experience, projects; right: skills, education) for a clean,
+ * professional, ATS-friendly single/two-page resume.
  */
 function buildResumeDocDefinition(content) {
-    const contactLine = [
+    const ACCENT = "#3b5bdb"
+    const TEXT_DARK = "#1a1f27"
+    const TEXT_MUTED = "#5b6472"
+    const TEXT_BODY = "#333333"
+
+    const contactParts = [
         content.contact?.email,
         content.contact?.phone,
         content.contact?.location,
         ...(content.contact?.links || [])
-    ].filter(Boolean).join("   |   ")
+    ].filter(Boolean)
 
-    const docContent = []
-
-    docContent.push({ text: content.fullName, style: "name" })
+    // ---------- Header ----------
+    const headerStack = [
+        { text: content.fullName || "Candidate Name", style: "name" }
+    ]
     if (content.title) {
-        docContent.push({ text: content.title, style: "title" })
+        headerStack.push({ text: content.title, style: "title" })
     }
-    if (contactLine) {
-        docContent.push({ text: contactLine, style: "contact" })
+    if (contactParts.length) {
+        headerStack.push({
+            text: contactParts.join("    |    "),
+            style: "contact",
+            margin: [ 0, 4, 0, 0 ]
+        })
     }
+
+    const header = {
+        stack: [
+            { stack: headerStack },
+            { canvas: [ { type: "line", x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1.5, lineColor: ACCENT } ], margin: [ 0, 10, 0, 14 ] }
+        ]
+    }
+
+    // ---------- Left column ----------
+    const leftColumn = []
 
     if (content.summary) {
-        docContent.push({ text: "Summary", style: "sectionHeader" })
-        docContent.push({ text: content.summary, style: "body", margin: [ 0, 0, 0, 10 ] })
-    }
-
-    if (content.skills && content.skills.length) {
-        docContent.push({ text: "Skills", style: "sectionHeader" })
-        docContent.push({ text: content.skills.join("  •  "), style: "body", margin: [ 0, 0, 0, 10 ] })
+        leftColumn.push({ text: "PROFILE", style: "sectionHeader" })
+        leftColumn.push({ text: content.summary, style: "body", margin: [ 0, 0, 0, 14 ] })
     }
 
     if (content.experience && content.experience.length) {
-        docContent.push({ text: "Experience", style: "sectionHeader" })
-        content.experience.forEach(exp => {
-            docContent.push({
+        leftColumn.push({ text: "EXPERIENCE", style: "sectionHeader" })
+        content.experience.forEach((exp, idx) => {
+            leftColumn.push({
                 columns: [
-                    { text: `${exp.role} — ${exp.company}`, style: "entryTitle" },
-                    { text: exp.duration, style: "entryMeta", alignment: "right" }
+                    { text: exp.role || "Role", style: "entryTitle", width: "*" },
+                    { text: exp.duration || "", style: "entryMeta", alignment: "right", width: "auto" }
                 ]
             })
+            if (exp.company) {
+                leftColumn.push({ text: exp.company, style: "entrySubtitle" })
+            }
             if (exp.highlights && exp.highlights.length) {
-                docContent.push({
+                leftColumn.push({
                     ul: exp.highlights,
                     style: "body",
-                    margin: [ 0, 2, 0, 8 ]
+                    margin: [ 0, 3, 0, idx === content.experience.length - 1 ? 14 : 10 ]
                 })
+            } else {
+                leftColumn.push({ text: "", margin: [ 0, 0, 0, idx === content.experience.length - 1 ? 14 : 10 ] })
             }
         })
     }
 
     if (content.projects && content.projects.length) {
-        docContent.push({ text: "Projects", style: "sectionHeader" })
-        content.projects.forEach(proj => {
-            docContent.push({ text: proj.name, style: "entryTitle" })
+        leftColumn.push({ text: "PROJECTS", style: "sectionHeader" })
+        content.projects.forEach((proj, idx) => {
+            leftColumn.push({ text: proj.name || "Project", style: "entryTitle" })
             if (proj.description) {
-                docContent.push({ text: proj.description, style: "body" })
+                leftColumn.push({ text: proj.description, style: "body", margin: [ 0, 1, 0, 0 ] })
             }
             if (proj.highlights && proj.highlights.length) {
-                docContent.push({
+                leftColumn.push({
                     ul: proj.highlights,
                     style: "body",
-                    margin: [ 0, 2, 0, 8 ]
+                    margin: [ 0, 3, 0, idx === content.projects.length - 1 ? 0 : 10 ]
                 })
             }
         })
     }
 
-    if (content.education && content.education.length) {
-        docContent.push({ text: "Education", style: "sectionHeader" })
-        content.education.forEach(edu => {
-            docContent.push({
-                columns: [
-                    { text: `${edu.degree} — ${edu.institution}`, style: "entryTitle" },
-                    { text: edu.duration, style: "entryMeta", alignment: "right" }
-                ],
-                margin: [ 0, 0, 0, 6 ]
-            })
+    // ---------- Right column (sidebar) ----------
+    const rightColumn = []
+
+    if (content.skills && content.skills.length) {
+        rightColumn.push({ text: "SKILLS", style: "sectionHeaderSidebar" })
+        rightColumn.push({
+            stack: content.skills.map(skill => ({
+                text: skill,
+                style: "skillItem",
+                margin: [ 0, 0, 0, 4 ]
+            })),
+            margin: [ 0, 0, 0, 14 ]
         })
+    }
+
+    if (content.education && content.education.length) {
+        rightColumn.push({ text: "EDUCATION", style: "sectionHeaderSidebar" })
+        content.education.forEach((edu, idx) => {
+            rightColumn.push({ text: edu.degree || "Degree", style: "entryTitleSidebar" })
+            if (edu.institution) {
+                rightColumn.push({ text: edu.institution, style: "entrySubtitleSidebar" })
+            }
+            if (edu.duration) {
+                rightColumn.push({ text: edu.duration, style: "entryMetaSidebar", margin: [ 0, 0, 0, idx === content.education.length - 1 ? 0 : 10 ] })
+            }
+        })
+    }
+
+    const body = {
+        columns: [
+            { width: "65%", stack: leftColumn },
+            { width: 12, text: "" },
+            {
+                width: "*",
+                stack: rightColumn,
+                margin: [ 12, 0, 0, 0 ]
+            }
+        ],
+        columnGap: 0
     }
 
     return {
@@ -197,19 +250,28 @@ function buildResumeDocDefinition(content) {
         pageMargins: [ 40, 40, 40, 40 ],
         defaultStyle: {
             font: "Helvetica",
-            fontSize: 10,
-            lineHeight: 1.25
+            fontSize: 9.5,
+            lineHeight: 1.3,
+            color: TEXT_BODY
         },
         styles: {
-            name: { fontSize: 20, bold: true, color: "#1a1f27", margin: [ 0, 0, 0, 2 ] },
-            title: { fontSize: 12, color: "#3b5bdb", margin: [ 0, 0, 0, 4 ] },
-            contact: { fontSize: 9, color: "#555555", margin: [ 0, 0, 0, 12 ] },
-            sectionHeader: { fontSize: 12, bold: true, color: "#1a1f27", margin: [ 0, 10, 0, 4 ], decoration: "underline" },
-            entryTitle: { fontSize: 10.5, bold: true, margin: [ 0, 4, 0, 1 ] },
-            entryMeta: { fontSize: 9, color: "#777777" },
-            body: { fontSize: 9.5, color: "#333333" }
+            name: { fontSize: 22, bold: true, color: TEXT_DARK },
+            title: { fontSize: 12, color: ACCENT, bold: true, margin: [ 0, 2, 0, 0 ] },
+            contact: { fontSize: 9, color: TEXT_MUTED },
+
+            sectionHeader: { fontSize: 11, bold: true, color: ACCENT, characterSpacing: 0.5, margin: [ 0, 0, 0, 6 ] },
+            entryTitle: { fontSize: 10.5, bold: true, color: TEXT_DARK, margin: [ 0, 6, 0, 0 ] },
+            entrySubtitle: { fontSize: 9.5, italics: true, color: TEXT_MUTED, margin: [ 0, 1, 0, 0 ] },
+            entryMeta: { fontSize: 9, color: TEXT_MUTED, margin: [ 0, 6, 0, 0 ] },
+            body: { fontSize: 9.5, color: TEXT_BODY },
+
+            sectionHeaderSidebar: { fontSize: 10.5, bold: true, color: ACCENT, characterSpacing: 0.5, margin: [ 0, 0, 0, 6 ] },
+            skillItem: { fontSize: 9.5, color: TEXT_BODY },
+            entryTitleSidebar: { fontSize: 9.5, bold: true, color: TEXT_DARK, margin: [ 0, 4, 0, 0 ] },
+            entrySubtitleSidebar: { fontSize: 9, color: TEXT_BODY, margin: [ 0, 1, 0, 0 ] },
+            entryMetaSidebar: { fontSize: 8.5, color: TEXT_MUTED, margin: [ 0, 1, 0, 0 ] }
         },
-        content: docContent
+        content: [ header, body ]
     }
 }
 
@@ -240,15 +302,16 @@ function generatePdfFromDocDefinition(docDefinition) {
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
 
     const prompt = `Generate resume content for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
+                        Resume: ${resume || "(No resume provided)"}
+                        Self Description: ${selfDescription || "(No self description provided)"}
                         Job Description: ${jobDescription}
 
                         Return a structured JSON object describing the candidate's resume tailored for the given job description.
-                        The content should highlight the candidate's strengths and relevant experience.
-                        The content of resume should not sound like it's generated by AI and should be as close as possible to a real human-written resume.
-                        The content should be ATS friendly, i.e. it should be easily parsable by ATS systems without losing important information.
-                        Keep the content concise and focused so that it fits within 1-2 pages. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
+                        - Base the content primarily on the candidate's actual Resume (and Self Description if provided). Reuse real company names, roles, durations, projects and skills from the Resume wherever available - do not invent unrelated experience.
+                        - The content should highlight the candidate's strengths and relevant experience for the target job.
+                        - The content of resume should not sound like it's generated by AI and should be as close as possible to a real human-written resume.
+                        - The content should be ATS friendly, i.e. it should be easily parsable by ATS systems without losing important information.
+                        - Keep the content concise and focused so that it fits within 1-2 pages. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
                     `
 
     const response = await ai.models.generateContent({

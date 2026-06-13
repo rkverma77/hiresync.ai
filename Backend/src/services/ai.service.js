@@ -247,12 +247,20 @@ function buildResumeDocDefinition(content) {
 
     return {
         pageSize: "A4",
-        pageMargins: [ 40, 40, 40, 40 ],
+        pageMargins: [ 40, 40, 40, 50 ],
         defaultStyle: {
             font: "Helvetica",
             fontSize: 9.5,
             lineHeight: 1.3,
             color: TEXT_BODY
+        },
+        footer: {
+            text: "This is an AI-generated resume and may contain errors. Kindly check the text before use.",
+            alignment: "center",
+            fontSize: 7.5,
+            color: TEXT_MUTED,
+            italics: true,
+            margin: [ 40, 10, 40, 0 ]
         },
         styles: {
             name: { fontSize: 22, bold: true, color: TEXT_DARK },

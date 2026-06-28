@@ -148,7 +148,13 @@ const Home = () => {
         setAnalyzeError(null)
         try {
             const data = await analyzeResumeFile(analyzeFile)
-            setAnalyzeResult(data.analysis)
+            const newEntry = {
+                ...data.analysis,
+                fileName: analyzeFile?.name || 'Resume',
+                createdAt: new Date().toISOString(),
+            }
+            setAnalyzeFile(null)
+            navigate('/resume-analysis', { state: { analysis: newEntry, fromTab: 'analyze' } })
             getAnalysisHistory()
                 .then(h => setAnalyzeHistory(h.analyses || []))
                 .catch(() => {})
@@ -377,7 +383,7 @@ const Home = () => {
 
                     {/* LEFT — Analyzer form (original design) */}
                     <div className='workspace-layout__form' ref={formRef2}>
-                        {!analyzeResult ? (
+
                             <div className='resume-analyzer'>
                                 <div className='resume-analyzer__upload-panel'>
                                     <div className='resume-analyzer__upload-area'>
@@ -444,147 +450,11 @@ const Home = () => {
                                     </div>
                                 </div>
                             </div>
-                        ) : (
-                            <div className='analyze-result'>
-                                <div className='analyze-result__header'>
-                                    <div>
-                                        <h2>Resume Analysis Complete</h2>
-                                        <p className='analyze-result__filename'>{analyzeFile?.name}</p>
-                                        {analyzeResult.one_line_verdict && (
-                                            <p className='analyze-result__verdict'>"{analyzeResult.one_line_verdict}"</p>
-                                        )}
-                                    </div>
-                                    <button className='analyze-result__reset' onClick={() => { setAnalyzeResult(null); setAnalyzeFile(null); setAnalyzeError(null) }}>
-                                        Analyze another
-                                    </button>
-                                </div>
-
-                                <div className='analyze-profile-row'>
-                                    {analyzeResult.seniority_level && <span className='profile-tag profile-tag--level'>{analyzeResult.seniority_level}</span>}
-                                    {analyzeResult.estimated_yoe != null && <span className='profile-tag profile-tag--yoe'>{analyzeResult.estimated_yoe} yrs exp</span>}
-                                    {(analyzeResult.industry_fit || []).map((ind, i) => <span key={i} className='profile-tag profile-tag--industry'>{ind}</span>)}
-                                    {(analyzeResult.top_skills || []).map((sk, i) => <span key={i} className='profile-tag profile-tag--skill'>{sk}</span>)}
-                                </div>
-
-                                <div className='analyze-scores'>
-                                    <div className='overall-score-ring'>
-                                        <svg viewBox="0 0 100 100" width="120" height="120">
-                                            <circle cx="50" cy="50" r="42" fill="none" stroke="#2a3348" strokeWidth="10" />
-                                            <circle cx="50" cy="50" r="42" fill="none"
-                                                stroke={analyzeResult.overall >= 75 ? '#3fb950' : analyzeResult.overall >= 50 ? '#f5a623' : '#ff4d4d'}
-                                                strokeWidth="10"
-                                                strokeDasharray={`${2 * Math.PI * 42 * analyzeResult.overall / 100} ${2 * Math.PI * 42}`}
-                                                strokeDashoffset={2 * Math.PI * 42 * 0.25}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                        <div className='overall-score-ring__value'>
-                                            <span>{analyzeResult.overall}</span>
-                                            <small>/ 100</small>
-                                        </div>
-                                        <p className='overall-score-ring__label'>Overall Score</p>
-                                    </div>
-                                    <div className='analyze-sub-scores'>
-                                        <ATSMeter score={analyzeResult.ats} label="ATS Compatibility" />
-                                        <ATSMeter score={analyzeResult.impact} label="Impact Language" />
-                                        <ATSMeter score={analyzeResult.clarity} label="Clarity & Structure" />
-                                        <ATSMeter score={analyzeResult.keywords} label="Keyword Density" />
-                                        <ATSMeter score={analyzeResult.completeness} label="Section Completeness" />
-                                        <ATSMeter score={analyzeResult.formatting} label="Formatting Quality" />
-                                        <ATSMeter score={analyzeResult.seniority_alignment} label="Seniority Alignment" />
-                                    </div>
-                                </div>
-
-                                <div className='analyze-feedback'>
-                                    <div className='analyze-feedback__col'>
-                                        <h3 className='analyze-feedback__title analyze-feedback__title--good'>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3fb950" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                                            Strengths
-                                        </h3>
-                                        {(analyzeResult.strengths || []).map((s, i) => <div key={i} className='feedback-item feedback-item--good'>{s}</div>)}
-                                    </div>
-                                    <div className='analyze-feedback__col'>
-                                        <h3 className='analyze-feedback__title analyze-feedback__title--warn'>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f5a623" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                                            Improvements
-                                        </h3>
-                                        {(analyzeResult.improvements || []).map((s, i) => <div key={i} className='feedback-item feedback-item--warn'>{s}</div>)}
-                                    </div>
-                                </div>
-
-                                {((analyzeResult.missing_sections || []).length > 0 || (analyzeResult.red_flags || []).length > 0) && (
-                                    <div className='analyze-extras'>
-                                        {(analyzeResult.missing_sections || []).length > 0 && (
-                                            <div className='analyze-extras__block'>
-                                                <h3 className='analyze-extras__label'>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
-                                                    Missing Sections
-                                                </h3>
-                                                <div className='analyze-extras__chips'>
-                                                    {analyzeResult.missing_sections.map((s, i) => <span key={i} className='missing-chip'>{s}</span>)}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {(analyzeResult.red_flags || []).length > 0 && (
-                                            <div className='analyze-extras__block'>
-                                                <h3 className='analyze-extras__label analyze-extras__label--red'>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
-                                                    Red Flags
-                                                </h3>
-                                                <div className='analyze-extras__chips'>
-                                                    {analyzeResult.red_flags.map((s, i) => <span key={i} className='redflag-chip'>{s}</span>)}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                <div className='analyze-result__cta'>
-                                    <p>Ready to prepare for interviews with this resume?</p>
-                                    <button className='generate-btn' onClick={() => setActiveTab('generate')}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" /></svg>
-                                        Generate Interview Strategy
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* RIGHT — Analysis History sidebar */}
                     <div className='workspace-layout__history'>
-                        {selectedAnalysis ? (
-                            <div className='history-panel'>
-                                <div className='history-panel__header'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                    <h2>Analysis Detail</h2>
-                                    <button className='history-panel__back' onClick={() => setSelectedAnalysis(null)}>← Back</button>
-                                </div>
-                                <div className='history-detail'>
-                                    <p className='history-detail__filename'>{selectedAnalysis.fileName}</p>
-                                    {selectedAnalysis.one_line_verdict && <p className='analyze-result__verdict'>"{selectedAnalysis.one_line_verdict}"</p>}
-                                    <div className='analyze-profile-row' style={{ marginTop: '0.5rem' }}>
-                                        {selectedAnalysis.seniority_level && <span className='profile-tag profile-tag--level'>{selectedAnalysis.seniority_level}</span>}
-                                        {selectedAnalysis.estimated_yoe != null && <span className='profile-tag profile-tag--yoe'>{selectedAnalysis.estimated_yoe} yrs exp</span>}
-                                        {(selectedAnalysis.industry_fit || []).map((ind, i) => <span key={i} className='profile-tag profile-tag--industry'>{ind}</span>)}
-                                        {(selectedAnalysis.top_skills || []).map((sk, i) => <span key={i} className='profile-tag profile-tag--skill'>{sk}</span>)}
-                                    </div>
-                                    <div className='history-detail__scores'>
-                                        {[
-                                            ['ATS Compatibility', selectedAnalysis.ats],
-                                            ['Impact Language', selectedAnalysis.impact],
-                                            ['Clarity & Structure', selectedAnalysis.clarity],
-                                            ['Keyword Density', selectedAnalysis.keywords],
-                                            ['Section Completeness', selectedAnalysis.completeness],
-                                            ['Formatting Quality', selectedAnalysis.formatting],
-                                            ['Seniority Alignment', selectedAnalysis.seniority_alignment],
-                                        ].map(([label, score]) => (
-                                            <ATSMeter key={label} score={score} label={label} />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className='history-panel'>
+                        <div className='history-panel'>
                                 <div className='history-panel__header'>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                     <h2>Recent Analyses</h2>
@@ -618,8 +488,7 @@ const Home = () => {
                                         ))}
                                     </ul>
                                 )}
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             )}

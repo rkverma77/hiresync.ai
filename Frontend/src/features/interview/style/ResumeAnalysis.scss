@@ -8,6 +8,7 @@ $text-muted:  #7d8590;
 $accent:      #ff2d78;
 $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
+// ── Page shell — fills the full viewport, nothing spills out ──────────────────
 .ra-page {
     height: 100vh;
     background: $bg-page;
@@ -16,7 +17,7 @@ $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden;   // page itself never scrolls
 }
 
 .ra-empty {
@@ -31,7 +32,7 @@ $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
     gap: 1rem;
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
+// ── Header — fixed height, never shrinks ─────────────────────────────────────
 .ra-header {
     display: flex;
     align-items: center;
@@ -39,8 +40,7 @@ $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
     padding: 1rem 2rem;
     border-bottom: 1px solid $border;
     background: $bg-card;
-    position: sticky;
-    top: 0;
+    flex-shrink: 0;     // KEY: header does not shrink
     z-index: 10;
 
     &__center {
@@ -61,22 +61,22 @@ $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
 
 .ra-accent { color: $accent; }
 
-// ── Body: two-column layout ───────────────────────────────────────────────────
+// ── Body: two-column layout — takes all remaining height ─────────────────────
 .ra-body {
     display: grid;
     grid-template-columns: 4fr 2fr;
     gap: 0;
-    flex: 1;
-    min-height: 0;
+    flex: 1;            // fills remaining height after header
+    min-height: 0;      // KEY: lets flex children shrink below content size
     overflow: hidden;
 }
 
-// ── Main (left column) ───────────────────────────────────────────────────────
+// ── Main (left column) — scrollable ──────────────────────────────────────────
 .ra-main {
-    width: 100%;
-    height: 100%;
+    // Do NOT set height:100% on a grid child — grid already sizes it.
+    // overflow-y:auto makes it scroll within the grid cell.
     overflow-y: auto;
-    padding: 1.5rem 1.75rem 3rem 2rem;
+    padding: 1.5rem 1.75rem 4rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -92,12 +92,13 @@ $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
 
 // ── Resume text panel (right column) ─────────────────────────────────────────
 .ra-resume-panel {
-    height: 100%;
+    // Grid already gives it full height; just flex internally.
     display: flex;
     flex-direction: column;
     background: $bg-page;
     box-sizing: border-box;
     overflow: hidden;
+    min-height: 0;      // KEY: allows inner flex children to shrink/scroll
 
     &--empty {
         align-items: center;
@@ -180,6 +181,7 @@ $font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
     // ── Scrollable body ───────────────────────────────────────────────────────
     &__body {
         flex: 1;
+        min-height: 0;      // KEY: without this flex child won't scroll
         overflow-y: auto;
         padding: 0;
         scrollbar-width: thin;

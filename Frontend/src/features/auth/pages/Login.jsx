@@ -47,7 +47,7 @@ const Login = () => {
 
 
     return (
-        <main>
+        <main className='auth-form'>
             <div className="form-container">
                 <h1>Login</h1>
                 <form onSubmit={handleSubmit}>

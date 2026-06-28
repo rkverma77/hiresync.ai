@@ -47,7 +47,7 @@ const Register = () => {
     }
 
     return (
-        <main>
+        <main className='auth-form'>
             <div className="form-container">
                 <h1>Register</h1>
 

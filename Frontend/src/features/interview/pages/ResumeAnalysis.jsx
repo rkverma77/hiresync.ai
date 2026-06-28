@@ -193,7 +193,7 @@ const ResumeAnalysis = () => {
             <div className='ra-body'>
 
                 {/* LEFT — all analysis content */}
-                <main className='ra-main'>
+                <div className='ra-main'>
 
                     {analysis.one_line_verdict && (
                         <div className='ra-verdict'>"{analysis.one_line_verdict}"</div>
@@ -282,7 +282,7 @@ const ResumeAnalysis = () => {
                         </div>
                     )}
 
-                </main>
+                </div>
 
                 {/* RIGHT — Resume text panel with CTA in header */}
                 <ResumeTextPanel

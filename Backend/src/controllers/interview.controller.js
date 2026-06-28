@@ -243,7 +243,7 @@ async function analyzeResumeController(req, res) {
 
     res.status(200).json({
         message: "Resume analyzed successfully.",
-        analysis,
+        analysis: { ...analysis, resumeText },
         quota: { remaining, limit: RATE_LIMIT_MAX }
     })
 }

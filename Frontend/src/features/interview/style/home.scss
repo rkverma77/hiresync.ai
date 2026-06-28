@@ -26,7 +26,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 3rem 1.5rem;
     gap: 2rem;
 }
@@ -98,7 +98,6 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
 // ── Main Card ─────────────────────────────────────────────────────────────────
 .interview-card {
     width: 100%;
-    max-width: 900px;
     background-color: $bg-card;
     border: 1px solid $border-color;
     border-radius: 1rem;
@@ -448,47 +447,314 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-.recent-reports{
+// ── Workspace Two-Column Layout ───────────────────────────────────────────────
+.workspace-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    align-items: start;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+
+    &__form {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    &__history {
+        display: flex;
+        flex-direction: column;
+        align-self: start;
+        height: var(--history-height);
+        overflow: hidden;
+    }
+}
+
+
+// ── Profile Section (below JD inside card) ───────────────────────────────────
+.profile-section {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    width: 100%;
-    max-width: 900px;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid $border-color;
+}
 
-    .reports-list{
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
+// ── Resume Analyzer Card ──────────────────────────────────────────────────────
+.resume-analyzer-card {
+    background-color: $bg-card;
+    border: 1px solid $border-color;
+    border-radius: 1rem;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 
-        .report-item{
-            background-color: $bg-card;
-            border: 1px solid $border-color;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            cursor: pointer;
-            flex-shrink: 0;
-
-            .match-score {
-                font-size: 0.8rem;
-                font-weight: 600;
-                align-items: flex-start;
-
-                &.score--high {
-                    color: #3fb950; // green for 80%+
-                }
-                &.score--mid {
-                    color: #f5a623; // amber for 60–79%
-                }
-                &.score--low {
-                    color: #ff4d4d; // red for <60%
-                }
-            }
+    &__header {
+        h2 {
+            margin: 0 0 0.35rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: $text-primary;
+        }
+        p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: $text-muted;
+            line-height: 1.6;
         }
     }
+}
+
+// ── History Panel ─────────────────────────────────────────────────────────────
+.history-panel {
+    background-color: $bg-card;
+    border: 1px solid $border-color;
+    border-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-right: 0;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid $border-color;
+        color: $text-muted;
+        flex-shrink: 0;
+
+        h2 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: $text-primary;
+            flex: 1;
+            margin: 0;
+        }
+    }
+
+    &__count {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.15rem 0.55rem;
+        border-radius: 2rem;
+        background-color: rgba($accent, 0.12);
+        border: 1px solid rgba($accent, 0.25);
+        color: $accent;
+        flex-shrink: 0;
+    }
+
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        flex: 1;
+        padding: 2rem 1.25rem;
+        color: $text-muted;
+        text-align: center;
+
+        svg {
+            opacity: 0.35;
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            max-width: 200px;
+        }
+    }
+}
+
+// ── History List ──────────────────────────────────────────────────────────────
+.history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    overflow-y: scroll;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.25) rgba(255,255,255,0.06);
+
+    &::-webkit-scrollbar {
+        width: 6px;
+        display: block;
+    }
+    &::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.06);
+        border-radius: 6px;
+        margin: 4px 0;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(255,255,255,0.28);
+        border-radius: 6px;
+        min-height: 40px;
+        &:hover {
+            background-color: rgba(255,255,255,0.45);
+        }
+    }
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid $border-color;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: $bg-panel;
+
+        .history-item__arrow {
+            color: $accent;
+            transform: translateX(2px);
+        }
+    }
+
+    &__main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: $text-primary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__meta {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.74rem;
+        color: $text-muted;
+
+        svg {
+            flex-shrink: 0;
+            opacity: 0.6;
+        }
+    }
+
+    &__tag {
+        font-size: 0.7rem;
+        color: #a78bfa;
+        font-weight: 500;
+    }
+
+    &__score {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        flex-shrink: 0;
+    }
+
+    &__score-label {
+        font-size: 0.65rem;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    &__arrow {
+        color: $text-muted;
+        flex-shrink: 0;
+        transition: color 0.15s, transform 0.15s;
+    }
+}
+
+// ── Score Badge ───────────────────────────────────────────────────────────────
+.score-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.35rem;
+    line-height: 1;
+
+    &--high {
+        color: #3fb950;
+        background-color: rgba(#3fb950, 0.1);
+        border: 1px solid rgba(#3fb950, 0.2);
+    }
+    &--mid {
+        color: #f5a623;
+        background-color: rgba(#f5a623, 0.1);
+        border: 1px solid rgba(#f5a623, 0.2);
+    }
+    &--low {
+        color: #ff4d4d;
+        background-color: rgba(#ff4d4d, 0.1);
+        border: 1px solid rgba(#ff4d4d, 0.2);
+    }
+}
+
+// ── History Detail (analyze sidebar expanded view) ────────────────────────────
+.history-detail {
+    padding: 1rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    &__filename {
+        margin: 0;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: $text-primary;
+    }
+
+    &__scores {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        margin-top: 0.25rem;
+    }
+}
+
+.history-panel__back {
+    margin-left: auto;
+    background: none;
+    border: 1px solid $border-color;
+    border-radius: 0.4rem;
+    color: $text-muted;
+    font-family: $font-stack;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+
+    &:hover {
+        border-color: $accent;
+        color: $text-primary;
+    }
+}
+
+// ── resume-analyzer inside workspace needs no max-width ───────────────────────
+.workspace-layout__form .resume-analyzer {
+    max-width: none;
 }
 
 

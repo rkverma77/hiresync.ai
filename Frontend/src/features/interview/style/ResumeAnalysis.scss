@@ -1,0 +1,485 @@
+// ── ResumeAnalysis page — isolated styles ─────────────────────────────────────
+$bg-page:     #0d1117;
+$bg-card:     #161b22;
+$bg-input:    #1c2230;
+$border:      #2a3348;
+$text-primary:#e6edf3;
+$text-muted:  #7d8590;
+$accent:      #ff2d78;
+$font:        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+.ra-page {
+    height: 100vh;
+    background: $bg-page;
+    color: $text-primary;
+    font-family: $font;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ra-empty {
+    min-height: 100vh;
+    background: $bg-page;
+    color: $text-primary;
+    font-family: $font;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.ra-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid $border;
+    background: $bg-card;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    &__center {
+        text-align: center;
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: $text-primary;
+        }
+        p {
+            margin: 0.15rem 0 0;
+            font-size: 0.78rem;
+            color: $text-muted;
+        }
+    }
+}
+
+.ra-accent { color: $accent; }
+
+// ── Body: two-column layout ───────────────────────────────────────────────────
+.ra-body {
+    display: grid;
+    grid-template-columns: 4fr 2fr;
+    gap: 0;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+// ── Main (left column) ───────────────────────────────────────────────────────
+.ra-main {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem 1.75rem 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-sizing: border-box;
+    border-right: 1px solid $border;
+    scrollbar-width: thin;
+    scrollbar-color: $border transparent;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: $border; border-radius: 2px; }
+}
+
+// ── Resume text panel (right column) ─────────────────────────────────────────
+.ra-resume-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: $bg-page;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    &--empty {
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: $text-muted;
+        font-size: 0.84rem;
+        svg { opacity: 0.35; }
+    }
+
+    // ── Panel header ─────────────────────────────────────────────────────────
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid $border;
+        flex-shrink: 0;
+        background: $bg-card;
+
+        &-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        &-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 45, 120, 0.1);
+            border: 1px solid rgba(255, 45, 120, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            svg { color: $accent; }
+        }
+
+        &-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: $text-primary;
+        }
+
+        &-sub {
+            font-size: 0.68rem;
+            color: $text-muted;
+            margin-top: 0.1rem;
+        }
+    }
+
+    // ── CTA inside panel header ───────────────────────────────────────────────
+    &__cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.85rem;
+        border-radius: 0.4rem;
+        background: linear-gradient(135deg, #ff2d78, #c41e5b);
+        border: none;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        font-family: $font;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: opacity 0.15s, transform 0.15s;
+
+        &:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+    }
+
+    // ── Scrollable body ───────────────────────────────────────────────────────
+    &__body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+        scrollbar-width: thin;
+        scrollbar-color: $border transparent;
+
+        &::-webkit-scrollbar { width: 3px; }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb { background: $border; border-radius: 2px; }
+    }
+
+    // ── Section blocks ────────────────────────────────────────────────────────
+    &__section {
+        border-bottom: 1px solid rgba($border, 0.6);
+        padding: 1rem 1.25rem;
+
+        &:last-child { border-bottom: none; }
+    }
+
+    &__section-label {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.67rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: $accent;
+        margin-bottom: 0.6rem;
+
+        &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 45, 120, 0.15);
+        }
+    }
+
+    &__line {
+        margin: 0 0 0.28rem;
+        font-size: 0.78rem;
+        color: $text-muted;
+        line-height: 1.65;
+    }
+
+    &__name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: $text-primary;
+        margin: 0 0 0.2rem;
+    }
+
+    &__contact {
+        font-size: 0.75rem;
+        color: $text-muted;
+        margin: 0 0 0.1rem;
+        line-height: 1.5;
+    }
+
+    &__bullets {
+        margin: 0.2rem 0 0 0.9rem;
+        padding: 0;
+        list-style: none;
+
+        li {
+            font-size: 0.78rem;
+            color: $text-muted;
+            line-height: 1.65;
+            margin-bottom: 0.2rem;
+            padding-left: 0.75rem;
+            position: relative;
+
+            &::before {
+                content: '▸';
+                position: absolute;
+                left: 0;
+                color: $accent;
+                font-size: 0.6rem;
+                top: 0.22rem;
+            }
+        }
+    }
+}
+
+// ── Card ─────────────────────────────────────────────────────────────────────
+.ra-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+// ── Verdict ──────────────────────────────────────────────────────────────────
+.ra-verdict {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-left: 3px solid $accent;
+    border-radius: 0.75rem;
+    padding: 0.9rem 1.25rem;
+    font-style: italic;
+    color: $text-muted;
+    font-size: 0.92rem;
+    line-height: 1.65;
+}
+
+// ── Tags ─────────────────────────────────────────────────────────────────────
+.ra-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.ra-tag {
+    padding: 0.25rem 0.65rem;
+    border-radius: 2rem;
+    font-size: 0.76rem;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &--accent  { background: rgba(255,45,120,0.12);  border: 1px solid rgba(255,45,120,0.3);  color: $accent;  font-weight: 700; }
+    &--blue    { background: rgba(88,166,255,0.1);   border: 1px solid rgba(88,166,255,0.25); color: #58a6ff; }
+    &--green   { background: rgba(63,185,80,0.1);    border: 1px solid rgba(63,185,80,0.25);  color: #3fb950; }
+    &--default { background: $bg-input;               border: 1px solid $border;               color: $text-primary; }
+}
+
+// ── Score row: ring + meters side by side ────────────────────────────────────
+.ra-scores {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 2rem;
+    align-items: center;
+    width: 100%;
+}
+
+.ra-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.ra-ring {
+    position: relative;
+    width: 130px;
+    height: 130px;
+
+    &__value {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__num   { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+    &__denom { font-size: 0.68rem; color: $text-muted; margin-top: 0.1rem; }
+}
+
+.ra-ring__label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: center;
+}
+
+.ra-sub-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.1rem 2.5rem;
+}
+
+// ── ATS Meter ────────────────────────────────────────────────────────────────
+.ra-meter {
+    margin-bottom: 0.75rem;
+
+    &:last-child { margin-bottom: 0; }
+
+    &__row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+    }
+
+    &__label { font-size: 0.79rem; color: $text-muted; }
+    &__score { font-size: 0.79rem; font-weight: 700; }
+
+    &__track {
+        height: 6px;
+        background: $border;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    &__fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+}
+
+// ── 2-column grid ─────────────────────────────────────────────────────────────
+.ra-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+// ── Section titles ───────────────────────────────────────────────────────────
+.ra-section-title {
+    margin: 0 0 0.85rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &--green  { color: #3fb950; }
+    &--yellow { color: #f5a623; }
+    &--red    { color: #ff4d4d; }
+    &--muted  { color: $text-muted; }
+}
+
+// ── Feedback items ───────────────────────────────────────────────────────────
+.ra-feedback-item {
+    border-radius: 0.45rem;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.83rem;
+    color: $text-primary;
+    line-height: 1.55;
+
+    &:last-child { margin-bottom: 0; }
+
+    &--green  { background: rgba(63,185,80,0.07);  border: 1px solid rgba(63,185,80,0.18); }
+    &--yellow { background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.18); }
+}
+
+// ── Chips ─────────────────────────────────────────────────────────────────────
+.ra-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.ra-chip {
+    padding: 0.25rem 0.6rem;
+    border-radius: 2rem;
+    font-size: 0.76rem;
+
+    &--default { background: $bg-input; border: 1px solid $border; color: $text-muted; }
+    &--red     { background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.25); color: #ff4d4d; }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.ra-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.84rem;
+    font-family: $font;
+    cursor: pointer;
+    font-weight: 500;
+
+    &--ghost {
+        background: transparent;
+        border: 1px solid $border;
+        color: $text-muted;
+        transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s;
+
+        &:hover {
+            opacity: 1;
+            color: $text-primary;
+            border-color: $accent;
+            background: rgba(255, 45, 120, 0.07);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    &--primary {
+        background: linear-gradient(135deg, #ff2d78, #c41e5b);
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.6rem 1.5rem;
+    }
+}

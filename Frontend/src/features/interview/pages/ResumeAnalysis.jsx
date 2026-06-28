@@ -2,6 +2,7 @@ import React from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import '../style/ResumeAnalysis.scss'
 import { useAuth } from '../../auth/hooks/useAuth.js'
+import ThemeToggle from '../../theme/ThemeToggle.jsx'
 
 const ATSMeter = ({ score, label }) => {
     const color = score >= 75 ? '#3fb950' : score >= 50 ? '#f5a623' : '#ff4d4d'
@@ -183,10 +184,13 @@ const ResumeAnalysis = () => {
                     <h1>Resume Analysis <span className='ra-accent'>Report</span></h1>
                     <p>{analysis.fileName}</p>
                 </div>
-                <button className='ra-btn ra-btn--ghost' onClick={handleLogoutClick}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    Logout
-                </button>
+                <div className='ra-header__actions'>
+                    <ThemeToggle />
+                    <button className='ra-btn ra-btn--ghost' onClick={handleLogoutClick}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Logout
+                    </button>
+                </div>
             </header>
 
             {/* Two-column body */}

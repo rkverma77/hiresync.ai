@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/hooks/useAuth.js'
 import ProgressBar from '../../../components/ProgressBar.jsx'
 import { useFakeProgress } from '../../../hooks/useFakeProgress.js'
 import { analyzeResumeFile, getAnalysisHistory } from '../services/interview.api.js'
+import ThemeToggle from '../../theme/ThemeToggle.jsx'
 
 const GENERATE_MESSAGES = [
     "Reading your resume...",
@@ -196,10 +197,13 @@ const Home = () => {
 
             {/* Page Header */}
             <header className='page-header'>
-                <button className='logout-btn' onClick={handleLogoutClick}>
+                <div className='header-actions'>
+                    <ThemeToggle />
+                    <button className='logout-btn' onClick={handleLogoutClick}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                     Logout
                 </button>
+                </div>
                 <h1>Your AI-Powered <span className='highlight'>Career Hub</span></h1>
                 <p>Generate interview strategies, analyze your resume, and chart your career path — all in one place.</p>
             </header>

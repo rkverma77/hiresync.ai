@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router'
 import ProgressBar from '../../../components/ProgressBar.jsx'
 import { useFakeProgress } from '../../../hooks/useFakeProgress.js'
 import { useAuth } from '../../auth/hooks/useAuth.js'
+import ThemeToggle from '../../theme/ThemeToggle.jsx'
 
 
 const NAV_ITEMS = [
@@ -578,6 +579,7 @@ const Interview = () => {
                     {/* Action Buttons */}
                     <div className='sidebar-spacer' />
                     <div className='sidebar-actions'>
+                        <ThemeToggle />
                         <button
                             onClick={() => navigate('/')}
                             className='button secondary-button'

@@ -4,6 +4,7 @@ import "../auth.form.scss"
 import { useAuth } from '../hooks/useAuth'
 import ProgressBar from '../../../components/ProgressBar.jsx'
 import { useFakeProgress } from '../../../hooks/useFakeProgress.js'
+import ThemeToggle from '../../theme/ThemeToggle.jsx'
 
 const CONNECT_MESSAGES = [
     "Connecting to server...",
@@ -48,6 +49,9 @@ const Register = () => {
 
     return (
         <main className='auth-form'>
+            <div className="auth-theme-toggle">
+                <ThemeToggle />
+            </div>
             <div className="form-container">
                 <h1>Register</h1>
 

@@ -75,11 +75,11 @@ function isRateLimitError(err) {
  * @description Pool-aware retry wrapper.
  *
  * Strategy:
- *  1. Ask the pool for the best available client (round-robin across healthy keys).
- *  2. On a 429, mark that key as rate-limited (65s cooldown) and immediately
- *     switch to the other key — no long sleep needed if a healthy key exists.
- *  3. Only sleep when ALL keys are on cooldown, and only until the soonest key recovers.
- *  4. Give up after MAX_RETRIES total attempts.
+ * 1. Ask the pool for the best available client (round-robin across healthy keys).
+ * 2. On a 429, mark that key as rate-limited (65s cooldown) and immediately
+ * switch to the other key — no long sleep needed if a healthy key exists.
+ * 3. Only sleep when ALL keys are on cooldown, and only until the soonest key recovers.
+ * 4. Give up after MAX_RETRIES total attempts.
  *
  * With 2 keys: a single 429 causes ~0s delay (instant failover to key 2).
  * Only when both keys are exhausted simultaneously does the user wait.
@@ -212,14 +212,13 @@ const resumeContentSchema = z.object({
 })
 
 const resumeAnalysisSchema = z.object({
-    overall: z.number().int().min(0).max(100),
-    ats: z.number().int().min(0).max(100),
-    impact: z.number().int().min(0).max(100),
-    clarity: z.number().int().min(0).max(100),
-    keywords: z.number().int().min(0).max(100),
-    completeness: z.number().int().min(0).max(100),
-    formatting: z.number().int().min(0).max(100),
-    seniority_alignment: z.number().int().min(0).max(100),
+    ats: z.number().int().min(0).max(100).describe("ATS compatibility score 0-100"),
+    impact: z.number().int().min(0).max(100).describe("Impact language score 0-100"),
+    clarity: z.number().int().min(0).max(100).describe("Clarity and structure score 0-100"),
+    keywords: z.number().int().min(0).max(100).describe("Keyword density score 0-100"),
+    completeness: z.number().int().min(0).max(100).describe("Section completeness score 0-100"),
+    formatting: z.number().int().min(0).max(100).describe("Formatting quality score 0-100"),
+    seniority_alignment: z.number().int().min(0).max(100).describe("Seniority alignment score 0-100"),
     strengths: z.array(z.string()).min(3).max(5),
     improvements: z.array(z.string()).min(3).max(5),
     missing_sections: z.array(z.string()),
@@ -241,20 +240,22 @@ const resumeAnalysisJsonSchema = sanitizeSchemaForGemini(zodToJsonSchema(resumeA
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
 
-    const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume || "(No resume provided)"}
-                        Self Description: ${selfDescription || "(No self description provided)"}
-                        Job Description: ${jobDescription}
+    const prompt = `You are an elite Technical Interviewer and Career Coach. Generate a comprehensive interview report for a candidate based strictly on the provided inputs.
 
-                        IMPORTANT INSTRUCTIONS:
-                        - Base the matchScore, skillGaps, technicalQuestions, behavioralQuestions and preparationPlan primarily on the candidate's actual Resume content (and Self Description if provided), comparing it against the Job Description. Do not ignore the resume content - reference the candidate's real skills, tools, projects and experience wherever relevant.
-                        - Generate AT LEAST 8 (and up to 12) technicalQuestions and AT LEAST 8 (and up to 12) behavioralQuestions.
-                        - The technical questions should cover a wide range of topics relevant to the job description, including core concepts, tools/technologies, problem solving, system design, coding and debugging.
-                        - The behavioral questions should cover a wide range of scenarios such as teamwork, conflict resolution, leadership, handling failure, time management, communication and adaptability.
-                        - Do not return fewer than 8 questions in either category.
-                        - For EACH skill gap, recommend 2-4 specific, real, well-known learning resources (e.g. real courses, official documentation, well-known YouTube channels/videos, books, or practice platforms like LeetCode/HackerRank) that would directly help the candidate close that gap. Prefer a mix of resource types and free options where good ones exist. Since exact URLs cannot be guaranteed to be valid, provide a precise search query instead of a URL.
-                        - All salary ranges in careerPath.salaryRange MUST be in Indian Rupees (INR) using the format '₹XL-₹YL per annum' (e.g. '₹4L-₹8L per annum'). Do NOT use USD or any other currency.
-`
+<INPUTS>
+Resume: ${resume || "(No resume provided)"}
+Self Description: ${selfDescription || "(No self description provided)"}
+Job Description: ${jobDescription}
+</INPUTS>
+
+<INSTRUCTIONS>
+1. Fact-Based Analysis: Base the match score, skill gaps, and preparation plan EXCLUSIVELY on the candidate's actual Resume and Self Description compared against the Job Description. Do not hallucinate skills they do not possess.
+2. Question Generation: Provide exactly 8 to 12 technical questions and 8 to 12 behavioral questions.
+3. Technical Depth: Technical questions must span core language concepts, specific tools/frameworks mentioned in the inputs, system design, and debugging scenarios.
+4. Behavioral Scope: Behavioral questions must assess teamwork, conflict resolution, adaptability, and failure mitigation.
+5. Resource Recommendations: For each skill gap, provide 2-4 highly specific, real-world learning resources (e.g., official docs, well-known practice platforms like LeetCode, or specific YouTube channels). Provide a precise search query, not a URL.
+6. Financial Constraints: All salary ranges MUST be in Indian Rupees (INR) formatted as '₹XL-₹YL per annum' (e.g., '₹4L-₹8L per annum'). Do not use USD.
+</INSTRUCTIONS>`
 
     const response = await withRetry((client) => withTimeout(client.models.generateContent({
         model: GEMINI_MODEL,
@@ -480,18 +481,21 @@ function generatePdfFromDocDefinition(docDefinition) {
 
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
 
-    const prompt = `Generate resume content for a candidate with the following details:
-                        Resume: ${resume || "(No resume provided)"}
-                        Self Description: ${selfDescription || "(No self description provided)"}
-                        Job Description: ${jobDescription}
+    const prompt = `You are an Expert Executive Resume Writer. Transform the provided inputs into a highly professional, ATS-optimized resume structure tailored for the target job description.
 
-                        Return a structured JSON object describing the candidate's resume tailored for the given job description.
-                        - Base the content primarily on the candidate's actual Resume (and Self Description if provided). Reuse real company names, roles, durations, projects and skills from the Resume wherever available - do not invent unrelated experience.
-                        - The content should highlight the candidate's strengths and relevant experience for the target job.
-                        - The content of resume should not sound like it's generated by AI and should be as close as possible to a real human-written resume.
-                        - The content should be ATS friendly, i.e. it should be easily parsable by ATS systems without losing important information.
-                        - Keep the content concise and focused so that it fits within 1-2 pages. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
-                    `
+<INPUTS>
+Resume: ${resume || "(No resume provided)"}
+Self Description: ${selfDescription || "(No self description provided)"}
+Job Description: ${jobDescription}
+</INPUTS>
+
+<INSTRUCTIONS>
+1. Fact Retention: Retain all real company names, roles, durations, and hard skills from the original inputs. Do not invent unverified experience.
+2. Tailoring: Highlight strengths and reframe existing experience to best align with the Job Description.
+3. Tone & Style: Write in a concise, high-impact professional tone using strong action verbs. Use objective language and avoid generic filler words.
+4. Density & Impact: Ensure bullet points focus on quantifiable achievements and technical depth.
+5. Formatting: Keep the content focused to fit a standard 1-2 page layout while maximizing relevance to ensure high ATS parsability.
+</INSTRUCTIONS>`
 
     const response = await withRetry((client) => withTimeout(client.models.generateContent({
         model: GEMINI_MODEL,
@@ -516,37 +520,65 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
 }
 
 async function analyzeResume(resumeText) {
-    const prompt = `Analyze the following resume text thoroughly and provide an accurate, honest assessment.
-Resume text:
----
+    const prompt = `You are a top-tier Technical Recruiter. Analyze the following resume text and provide a brutally honest, objective assessment independent of any specific job description.
+
+<RESUME_TEXT>
 ${resumeText.slice(0, 8000)}
----
+</RESUME_TEXT>
 
-Scoring guide:
-- ats: Does it avoid tables, columns, graphics? Simple formatting, standard section names?
-- impact: Are bullets quantified with numbers/percentages? Action verbs used?
-- clarity: Is it easy to skim? Good hierarchy? No walls of text?
-- keywords: Does it include industry-relevant technical and soft skill terms?
-- completeness: Are all key sections present (contact, summary, experience, education, skills)?
-- formatting: Consistent dates, implied clean structure, no visible typos?
-- seniority_alignment: Does the experience level and language match the apparent target role?
+<SCORING_RULES>
+1. Range Utilization: Use the full 0-100 scale. A genuinely weak area should score 10-30; a world-class area should score 90-100. Do not default to middle scores.
+2. Experience Context: DO NOT penalize for 0 years of formal employment if the candidate demonstrates exceptional technical depth through complex projects, open-source work, or elite competitive programming rankings. Impact can be achieved outside of formal employment.
+3. Evidence-Based: Every score and qualitative feedback point must be justified by the provided text.
+4. Score Differentiation: Each dimension MUST receive a different score. If all 7 scores are within 5 points of each other, your evaluation is wrong — no resume is equally strong across all dimensions.
+</SCORING_RULES>
 
-Be accurate and honest — scores should genuinely reflect the actual resume content, not be generic defaults.`
+<DIMENSIONS_TO_EVALUATE>
+Evaluate exactly against these JSON schema keys:
+- ats: Is the text clean and parsable? Penalize heavily for missing standard sections or scrambled text.
+- impact: Are bullet points quantified (e.g., efficiency gains, user counts)? Penalize vague duties.
+- clarity: Is the hierarchy logical? Can it be skimmed by a human in 6-7 seconds?
+- keywords: Are modern industry standard tools present and contextualized within achievements (not just a comma-separated list)?
+- completeness: Are all vital sections (Contact, Education, Experience/Projects, Skills) present?
+- formatting: Are date formats consistent? Are there obvious typos or casing errors (e.g., "node.js" instead of "Node.js")?
+- seniority_alignment: Does the depth of achievements match the inferred seniority level?
+</DIMENSIONS_TO_EVALUATE>`
 
     const response = await withRetry((client) => withTimeout(client.models.generateContent({
         model: GEMINI_MODEL,
         contents: prompt,
         config: {
             responseMimeType: "application/json",
-            responseSchema: resumeAnalysisJsonSchema,  // FIX 3: use pre-serialized schema
+            responseSchema: resumeAnalysisJsonSchema,
         }
     }), "Analyzing your resume took too long. Please try again."))
 
+    let result
     try {
-        return JSON.parse(response.text)
+        result = JSON.parse(response.text)
     } catch (err) {
         throw new AppError("The AI returned an unexpected response. Please try again.", 502)
     }
+
+    // Calculate overall as a weighted average of sub-scores so it is always consistent.
+    // Weights reflect how much each dimension impacts overall resume quality.
+    const weights = {
+        ats:                 0.20,
+        impact:              0.20,
+        clarity:             0.15,
+        keywords:            0.15,
+        completeness:        0.15,
+        formatting:          0.10,
+        seniority_alignment: 0.05,
+    }
+    const overall = Math.round(
+        Object.entries(weights).reduce((sum, [key, weight]) => {
+            return sum + (result[key] ?? 0) * weight
+        }, 0)
+    )
+    result.overall = overall
+
+    return result
 }
 
 module.exports = { generateInterviewReport, generateResumePdf, analyzeResume }

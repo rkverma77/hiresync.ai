@@ -25,6 +25,64 @@ const RESOURCE_TYPE_LABEL = {
     practice: 'Practice',
 }
 
+// ── Markdown renderer ─────────────────────────────────────────────────────────
+/**
+ * Converts a small subset of Markdown to React elements:
+ *   **bold**, *italic*, `code`, numbered lists (1. ...), bullet lists (- ...)
+ * Each "block" (blank-line-separated) is rendered as its own <p> or <ul>/<ol>.
+ */
+const parseInline = (text, keyPrefix) => {
+    // Split on **bold**, *italic*, `code`
+    const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g)
+    return parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**'))
+            return <strong key={`${keyPrefix}-${i}`}>{part.slice(2, -2)}</strong>
+        if (part.startsWith('*') && part.endsWith('*'))
+            return <em key={`${keyPrefix}-${i}`}>{part.slice(1, -1)}</em>
+        if (part.startsWith('`') && part.endsWith('`'))
+            return <code key={`${keyPrefix}-${i}`} style={{ background: 'rgba(127,127,127,.15)', borderRadius: 3, padding: '1px 4px', fontFamily: 'monospace', fontSize: '.88em' }}>{part.slice(1, -1)}</code>
+        return part
+    })
+}
+
+const MarkdownText = ({ text, className }) => {
+    if (!text) return null
+    // Split into blocks on blank lines
+    const blocks = text.split(/\n{2,}/)
+    const elements = blocks.map((block, bi) => {
+        const lines = block.split('\n')
+        // Ordered list  "1. item"
+        if (/^\d+\.\s/.test(lines[0])) {
+            return (
+                <ol key={bi} style={{ paddingLeft: '1.4em', margin: '0.35em 0' }}>
+                    {lines.map((l, li) => {
+                        const m = l.match(/^\d+\.\s(.*)/)
+                        return m ? <li key={li}>{parseInline(m[1], `${bi}-${li}`)}</li> : null
+                    })}
+                </ol>
+            )
+        }
+        // Unordered list  "- item" or "* item"
+        if (/^[-*]\s/.test(lines[0])) {
+            return (
+                <ul key={bi} style={{ paddingLeft: '1.4em', margin: '0.35em 0' }}>
+                    {lines.map((l, li) => {
+                        const m = l.match(/^[-*]\s(.*)/)
+                        return m ? <li key={li}>{parseInline(m[1], `${bi}-${li}`)}</li> : null
+                    })}
+                </ul>
+            )
+        }
+        // Paragraph – join single line-breaks with a space
+        return (
+            <p key={bi} className={bi === 0 ? className : undefined} style={bi > 0 ? { marginTop: '0.5em' } : undefined}>
+                {parseInline(lines.join(' '), `${bi}`)}
+            </p>
+        )
+    })
+    return <>{elements}</>
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 const QuestionCard = ({ item, index }) => {
     const [open, setOpen] = useState(false)
@@ -32,7 +90,7 @@ const QuestionCard = ({ item, index }) => {
         <div className='q-card'>
             <div className='q-card__header' onClick={() => setOpen(o => !o)}>
                 <span className='q-card__index'>Q{index + 1}</span>
-                <p className='q-card__question'>{item.question}</p>
+                <MarkdownText text={item.question} className='q-card__question' />
                 <span className={`q-card__chevron ${open ? 'q-card__chevron--open' : ''}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
                 </span>
@@ -41,11 +99,11 @@ const QuestionCard = ({ item, index }) => {
                 <div className='q-card__body'>
                     <div className='q-card__section'>
                         <span className='q-card__tag q-card__tag--intention'>Intention</span>
-                        <p>{item.intention}</p>
+                        <MarkdownText text={item.intention} />
                     </div>
                     <div className='q-card__section'>
                         <span className='q-card__tag q-card__tag--answer'>Model Answer</span>
-                        <p>{item.answer}</p>
+                        <MarkdownText text={item.answer} />
                     </div>
                 </div>
             )}
@@ -64,7 +122,7 @@ const ResourceItem = ({ resource }) => {
                 <span className='resource-item__provider'>{resource.provider}</span>
             </div>
             <p className='resource-item__title'>{resource.title}</p>
-            <p className='resource-item__desc'>{resource.description}</p>
+            <MarkdownText text={resource.description} className='resource-item__desc' />
             <span className='resource-item__link'>
                 Find this resource
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" /></svg>
@@ -141,7 +199,7 @@ const CareerStage = ({ stage, index }) => {
                 </div>
                 {expanded && (
                     <div className='career-stage__body'>
-                        <p className='career-stage__desc'>{stage.description}</p>
+                        <MarkdownText text={stage.description} className='career-stage__desc' />
                         <div className='career-stage__milestones'>
                             {stage.milestones.map((m, i) => (
                                 <div key={i} className='career-milestone'>
@@ -196,7 +254,7 @@ const ResumeTipItem = ({ tip }) => {
     return (
         <div className='resume-tip'>
             <span className='resume-tip__icon' style={{ color, background: `${color}18`, borderColor: `${color}33` }}>{icon}</span>
-            <p className='resume-tip__text'>{tip.text}</p>
+            <MarkdownText text={tip.text} className='resume-tip__text' />
         </div>
     )
 }

@@ -64,17 +64,25 @@ const Home = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
+        let rafId
         const syncHeight = () => {
             const activeRef = activeTab === 'generate' ? formRef.current : formRef2.current
             if (activeRef) {
                 document.documentElement.style.setProperty('--history-height', activeRef.offsetHeight + 'px')
             }
         }
-        // Small timeout to let the DOM render the newly active tab
-        const id = setTimeout(syncHeight, 0)
+        // Use rAF so the DOM has painted before we measure
+        rafId = requestAnimationFrame(syncHeight)
+        const resizeObserver = new ResizeObserver(() => {
+            cancelAnimationFrame(rafId)
+            rafId = requestAnimationFrame(syncHeight)
+        })
+        const activeRef = activeTab === 'generate' ? formRef.current : formRef2.current
+        if (activeRef) resizeObserver.observe(activeRef)
         window.addEventListener('resize', syncHeight)
         return () => {
-            clearTimeout(id)
+            cancelAnimationFrame(rafId)
+            resizeObserver.disconnect()
             window.removeEventListener('resize', syncHeight)
         }
     }, [activeTab])

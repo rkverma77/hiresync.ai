@@ -6,9 +6,7 @@ $severity-high: #ff4d4d;
 $severity-medium: #f5a623;
 $severity-low: #3fb950;
 
-*::-webkit-scrollbar {
-    display: none;
-}
+/* scrollbars shown per-element */
 
 // ── Page Shell ────────────────────────────────────────────────────────────────
 .interview-page {
@@ -126,6 +124,26 @@ $severity-low: #3fb950;
     min-height: initial;
     max-height: 100vh;
     align-items: flex-start;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+
+    &::-webkit-scrollbar {
+        display: block;
+        width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--border-color);
+        border-radius: 99px;
+        &:hover {
+            background-color: var(--text-muted);
+        }
+    }
+
+    mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 40px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 40px), transparent 100%);
 
 
 
@@ -1309,7 +1327,10 @@ button.skill-tag {
         flex-direction: column;
         gap: 0.3rem;
 
-        &:hover::-webkit-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+
+        &::-webkit-scrollbar {
             display: block;
             width: 4px;
         }
@@ -1317,8 +1338,11 @@ button.skill-tag {
             background: transparent;
         }
         &::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 2px;
+            background-color: var(--border-color);
+            border-radius: 99px;
+            &:hover {
+                background-color: var(--text-muted);
+            }
         }
     }
 

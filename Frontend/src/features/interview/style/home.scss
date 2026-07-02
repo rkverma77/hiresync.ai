@@ -1,4 +1,5 @@
 @use 'sass:color';
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 // ── Variables ────────────────────────────────────────────────────────────────
 
 // ── Page Shell ───────────────────────────────────────────────────────────────
@@ -9,12 +10,19 @@
     color: var(--text-primary);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
     padding: 3rem 1.5rem;
     gap: 2rem;
+
+    h1, h2, h3 {
+        font-family: var(--font-display);
+    }
 }
 
 // ── Loading Screen ───────────────────────────────────────────────────────────
@@ -68,10 +76,34 @@
         }
     }
 
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 0.85rem;
+
+        &::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+        }
+    }
+
     h1 {
-        font-size: 2.25rem;
+        font-family: var(--font-display);
+        font-size: 2.5rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.6rem;
         color: var(--text-primary);
     }
 
@@ -88,6 +120,70 @@
     }
 }
 
+// ── Stats Rail ───────────────────────────────────────────────────────────────
+.stats-rail {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 760px;
+    margin-top: 1.75rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.85rem;
+    box-shadow: 0 4px 20px var(--shadow);
+    overflow: hidden;
+
+    &__item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2rem;
+        padding: 1rem 0.75rem;
+        border-right: 1px solid var(--border-color);
+        position: relative;
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+
+    &__value {
+        font-family: var(--font-mono);
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+
+        span {
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+    }
+
+    &__label {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+        flex-wrap: wrap;
+
+        &__item {
+            flex: 1 1 50%;
+            border-bottom: 1px solid var(--border-color);
+
+            &:nth-child(2n) {
+                border-right: none;
+            }
+        }
+    }
+}
+
 // ── Main Card ─────────────────────────────────────────────────────────────────
 .interview-card {
     width: 100%;
@@ -98,7 +194,7 @@
 
     &__body {
         display: flex;
-        min-height: 520px;
+        min-height: 480px;
     }
 
     &__footer {
@@ -194,6 +290,8 @@
         flex: 1;
         width: 100%;
         background-color: var(--bg-input);
+        background-image: radial-gradient(color-mix(in srgb, var(--border-color) 70%, transparent) 1px, transparent 1px);
+        background-size: 14px 14px;
         border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         padding: 0.75rem 1rem;
@@ -222,12 +320,61 @@
     &--left {
         position: relative;
 
-        .char-counter {
-            position: absolute;
-            bottom: 2.25rem;
-            right: 2rem;
-            font-size: 0.75rem;
-            color: var(--text-muted);
+        .detect-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: -0.25rem;
+
+            span.detect-row__label {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                margin-right: 0.15rem;
+            }
+        }
+
+        .textarea-wrap {
+            position: relative;
+            flex: 1;
+            display: flex;
+            border-radius: 0.5rem;
+            overflow: hidden;
+
+            .char-counter {
+                position: absolute;
+                bottom: 0.65rem;
+                right: 0.85rem;
+                font-size: 0.72rem;
+                font-family: var(--font-mono);
+                color: var(--text-muted);
+                background-color: color-mix(in srgb, var(--bg-input) 80%, transparent);
+                padding: 0.1rem 0.4rem;
+                border-radius: 0.3rem;
+                pointer-events: none;
+                z-index: 2;
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                right: 0;
+                height: 46%;
+                pointer-events: none;
+                background: linear-gradient(
+                    to bottom,
+                    transparent,
+                    color-mix(in srgb, var(--accent) 7%, transparent) 45%,
+                    color-mix(in srgb, var(--accent) 7%, transparent) 55%,
+                    transparent
+                );
+                animation: scan-sweep 7s ease-in-out infinite;
+            }
+
+            textarea {
+                flex: 1;
+            }
         }
     }
 
@@ -236,7 +383,39 @@
     }
 }
 
+@keyframes scan-sweep {
+    0% { transform: translateY(-60%); }
+    50% { transform: translateY(160%); }
+    100% { transform: translateY(-60%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .panel--left .textarea-wrap::after {
+        animation: none;
+        display: none;
+    }
+}
+
 // ── Badges ────────────────────────────────────────────────────────────────────
+.detect-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 1rem;
+    color: var(--text-muted);
+    background-color: var(--bg-panel);
+    border: 1px dashed var(--border-color);
+
+    &--standalone {
+        align-self: flex-start;
+        font-family: var(--font-mono);
+        letter-spacing: 0.02em;
+        color: var(--accent);
+        border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border-color));
+        background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-card));
+    }
+}
+
 .badge {
     font-size: 0.7rem;
     font-weight: 600;
@@ -411,7 +590,7 @@
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 95%, black) 100%);
-    color: #fff;
+    color: var(--on-accent, #fff);
     font-size: 0.9rem;
     font-weight: 600;
     border: none;
@@ -457,14 +636,25 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
+        height: var(--form-height, auto);
+        overflow: hidden;
+        transition: height 0.2s ease;
+
+        // The card inside must never be flex-shrunk to fit this wrapper's
+        // own (animating) height, or its measured "natural" height gets
+        // corrupted mid-transition and the animation gets stuck.
+        > * {
+            flex-shrink: 0;
+        }
     }
 
     &__history {
         display: flex;
         flex-direction: column;
         align-self: start;
-        height: var(--history-height);
+        height: var(--history-height, 520px);
         overflow: hidden;
+        transition: height 0.2s ease;
     }
 }
 
@@ -701,6 +891,34 @@
     }
 }
 
+// ── Score Ring (donut) ──────────────────────────────────────────────────────
+.score-ring {
+    position: relative;
+    border-radius: 50%;
+    background: conic-gradient(var(--ring-color) calc(var(--score) * 1%), var(--border-color) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: var(--bg-card);
+    }
+
+    &__value {
+        position: relative;
+        z-index: 1;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+}
+
 // ── Score Badge ───────────────────────────────────────────────────────────────
 .score-badge {
     font-size: 0.8rem;
@@ -773,6 +991,134 @@
 }
 
 
+// ── Project Flash Card ──────────────────────────────────────────────────────
+.project-flashcard {
+    width: 100%;
+    max-width: 1200px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.75rem 2rem 2rem;
+    box-shadow: 0 4px 20px var(--shadow);
+
+    &__head {
+        text-align: center;
+        margin-bottom: 1.5rem;
+
+        h1, h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+
+            .highlight {
+                color: var(--accent);
+            }
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    }
+
+    &__viewport {
+        width: 100%;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+        mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    }
+
+    &__track {
+        display: flex;
+        gap: 1rem;
+        width: max-content;
+        animation: flashcard-scroll 32s linear infinite;
+
+        &:hover {
+            animation-play-state: paused;
+        }
+    }
+}
+
+@keyframes flashcard-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .project-flashcard__track {
+        animation: none;
+    }
+}
+
+.feature-chip {
+    flex: 0 0 260px;
+    width: 260px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+
+    &:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent);
+    }
+
+    &__icon {
+        font-size: 1.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.6rem;
+        background-color: var(--bg-input);
+    }
+
+    h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    p {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    &__tag {
+        align-self: flex-start;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        color: var(--accent);
+        background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+
+    // Tint variants — subtle accent per icon background, mirrors reference design
+    &--purple .feature-chip__icon { background-color: color-mix(in srgb, #8b5cf6 20%, var(--bg-input)); }
+    &--blue .feature-chip__icon   { background-color: color-mix(in srgb, #3b82f6 20%, var(--bg-input)); }
+    &--green .feature-chip__icon  { background-color: color-mix(in srgb, #22c55e 20%, var(--bg-input)); }
+    &--orange .feature-chip__icon { background-color: color-mix(in srgb, #f59e0b 20%, var(--bg-input)); }
+    &--pink .feature-chip__icon   { background-color: color-mix(in srgb, #ec4899 20%, var(--bg-input)); }
+
+    &--purple &__tag { color: #8b5cf6; background-color: color-mix(in srgb, #8b5cf6 15%, transparent); }
+    &--blue &__tag   { color: #3b82f6; background-color: color-mix(in srgb, #3b82f6 15%, transparent); }
+    &--green &__tag  { color: #22c55e; background-color: color-mix(in srgb, #22c55e 15%, transparent); }
+    &--orange &__tag { color: #f59e0b; background-color: color-mix(in srgb, #f59e0b 15%, transparent); }
+    &--pink &__tag   { color: #ec4899; background-color: color-mix(in srgb, #ec4899 15%, transparent); }
+}
+
 // ── Page Footer ───────────────────────────────────────────────────────────────
 .page-footer {
     display: flex;
@@ -822,7 +1168,7 @@
 
     &--active {
         background-color: var(--accent);
-        color: #fff;
+        color: var(--on-accent, #fff);
 
         &:hover {
             background-color: var(--accent-alt);
@@ -969,9 +1315,16 @@
     border-radius: 0.5rem;
 
     &__icon {
-        font-size: 1.1rem;
+        font-size: 1rem;
         flex-shrink: 0;
         margin-top: 1px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        background-color: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
     }
 
     &__label {

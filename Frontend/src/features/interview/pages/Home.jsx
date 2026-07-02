@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview.js'
 import { useNavigate } from 'react-router'
@@ -20,12 +20,83 @@ const GENERATE_MESSAGES = [
     "Finalizing your interview plan...",
 ]
 
+const PROJECT_FEATURES = [
+    {
+        icon: '🚀',
+        title: 'AI Interview Strategy',
+        desc: 'Role-specific technical and behavioral questions with detailed model answers and interviewer intent.',
+        tag: 'Interview Prep',
+        tint: 'purple',
+    },
+    {
+        icon: '📄',
+        title: 'ATS Resume Intelligence',
+        desc: 'Comprehensive ATS analysis covering compatibility, keyword coverage, formatting, and actionable fixes.',
+        tag: 'Resume Analysis',
+        tint: 'blue',
+    },
+    {
+        icon: '📑',
+        title: 'ATS Resume Generator',
+        desc: 'Create a customized, ATS-friendly resume tailored to any job description with one click.',
+        tag: 'Resume Builder',
+        tint: 'pink',
+    },
+    {
+        icon: '🎯',
+        title: 'Job Match Score',
+        desc: 'Compare your profile against any job description and get an instant AI compatibility score.',
+        tag: 'Profile Matching',
+        tint: 'green',
+    },
+    {
+        icon: '🧩',
+        title: 'Skill Gap Detection',
+        desc: 'Discover missing skills, severity levels, and curated learning resources to become job-ready.',
+        tag: 'Career Growth',
+        tint: 'green',
+    },
+    {
+        icon: '📅',
+        title: 'Preparation Roadmap',
+        desc: 'A personalized day-by-day preparation plan built around your target role and current skill level.',
+        tag: 'Study Plan',
+        tint: 'orange',
+    },
+    {
+        icon: '🧠',
+        title: 'Google Gemini AI Engine',
+        desc: 'Powered by Gemini 2.5 Flash with multi-key rotation and intelligent failover for uninterrupted AI.',
+        tag: 'Reliable & Fast',
+        tint: 'orange',
+    },
+    {
+        icon: '🛡️',
+        title: 'Production-Ready SaaS',
+        desc: 'JWT-secured auth, scalable architecture, and a responsive UI with seamless dark/light mode.',
+        tag: 'Secure & Scalable',
+        tint: 'pink',
+    },
+]
+
 const RESUME_QUICK_TIPS = [
     { label: 'Use action verbs', desc: 'Start bullets with Led, Built, Reduced, Grew…', icon: '⚡' },
     { label: 'Quantify impact', desc: 'Add numbers: "Reduced load time by 40%"', icon: '📊' },
     { label: 'Tailor per role', desc: 'Mirror keywords from the job description', icon: '🎯' },
     { label: 'Keep it concise', desc: '1 page for <10 yrs exp, 2 max for senior roles', icon: '✂️' },
 ]
+
+const ScoreRing = ({ score = 0, size = 38 }) => {
+    const color = score >= 80 ? '#3fb950' : score >= 60 ? '#f5a623' : '#ff4d4d'
+    return (
+        <div
+            className='score-ring'
+            style={{ '--score': score, '--ring-color': color, width: size, height: size }}
+        >
+            <span className='score-ring__value'>{score}%</span>
+        </div>
+    )
+}
 
 const ATSMeter = ({ score, label }) => {
     const color = score >= 75 ? '#3fb950' : score >= 50 ? '#f5a623' : '#ff4d4d'
@@ -63,16 +134,28 @@ const Home = () => {
 
     const navigate = useNavigate()
 
-    useEffect(() => {
-        let rafId
+    const avgMatchScore = reports.length
+        ? Math.round(reports.reduce((sum, r) => sum + (r.matchScore || 0), 0) / reports.length)
+        : null
+
+    const bestScore = analyzeHistory.length
+        ? Math.max(...analyzeHistory.map(a => a.overall || 0))
+        : null
+
+    useLayoutEffect(() => {
         const syncHeight = () => {
             const activeRef = activeTab === 'generate' ? formRef.current : formRef2.current
             if (activeRef) {
-                document.documentElement.style.setProperty('--history-height', activeRef.offsetHeight + 'px')
+                const h = activeRef.offsetHeight + 'px'
+                document.documentElement.style.setProperty('--history-height', h)
+                document.documentElement.style.setProperty('--form-height', h)
             }
         }
-        // Use rAF so the DOM has painted before we measure
-        rafId = requestAnimationFrame(syncHeight)
+        // Measure synchronously before the browser paints — avoids the
+        // one-frame flash of the old height on tab switch / reload.
+        syncHeight()
+
+        let rafId
         const resizeObserver = new ResizeObserver(() => {
             cancelAnimationFrame(rafId)
             rafId = requestAnimationFrame(syncHeight)
@@ -233,8 +316,8 @@ const Home = () => {
                 <div className='workspace-layout'>
 
                     {/* LEFT — Original card design untouched */}
-                    <div className='workspace-layout__form' ref={formRef}>
-                        <div className='interview-card'>
+                    <div className='workspace-layout__form'>
+                        <div className='interview-card' ref={formRef}>
                             <div className='interview-card__body'>
 
                                 {/* Left Panel - Job Description */}
@@ -246,13 +329,22 @@ const Home = () => {
                                         <h2>Target Job Description</h2>
                                         <span className='badge badge--required'>Required</span>
                                     </div>
-                                    <textarea
-                                        onChange={(e) => { setJobDescription(e.target.value); setJobDescCount(e.target.value.length) }}
-                                        className='panel__textarea'
-                                        placeholder={`Paste the full job description here...\ne.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design...'`}
-                                        maxLength={5000}
-                                    />
-                                    <div className='char-counter'>{jobDescCount} / 5000 chars</div>
+                                    <div className='textarea-wrap'>
+                                        <textarea
+                                            onChange={(e) => { setJobDescription(e.target.value); setJobDescCount(e.target.value.length) }}
+                                            className='panel__textarea'
+                                            placeholder={`Paste the full job description here...\ne.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design...'`}
+                                            maxLength={5000}
+                                        />
+                                        <div className='char-counter'>{jobDescCount} / 5000</div>
+                                    </div>
+                                    <div className='detect-row'>
+                                        <span className='detect-row__label'>Auto-detects:</span>
+                                        <span className='detect-tag'>Role</span>
+                                        <span className='detect-tag'>Seniority</span>
+                                        <span className='detect-tag'>Must-have skills</span>
+                                        <span className='detect-tag'>Tech stack</span>
+                                    </div>
                                 </div>
 
                                 {/* Vertical Divider */}
@@ -292,10 +384,10 @@ const Home = () => {
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                                                     </span>
                                                     <p className='dropzone__title'>Click to upload or drag &amp; drop</p>
-                                                    <p className='dropzone__subtitle'>PDF or DOCX (Max 5MB)</p>
+                                                    <p className='dropzone__subtitle'>PDF (Max 3MB)</p>
                                                 </>
                                             )}
-                                            <input ref={resumeInputRef} onChange={handleResumeChange} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' />
+                                            <input ref={resumeInputRef} onChange={handleResumeChange} hidden type='file' id='resume' name='resume' accept='.pdf' />
                                         </label>
                                     </div>
 
@@ -374,9 +466,7 @@ const Home = () => {
                                                 </div>
                                             </div>
                                             <div className='history-item__score'>
-                                                <span className={`score-badge ${report.matchScore >= 80 ? 'score-badge--high' : report.matchScore >= 60 ? 'score-badge--mid' : 'score-badge--low'}`}>
-                                                    {report.matchScore}%
-                                                </span>
+                                                <ScoreRing score={report.matchScore} />
                                                 <span className='history-item__score-label'>match</span>
                                             </div>
                                             <svg className='history-item__arrow' xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -394,11 +484,12 @@ const Home = () => {
                 <div className='workspace-layout'>
 
                     {/* LEFT — Analyzer form (original design) */}
-                    <div className='workspace-layout__form' ref={formRef2}>
+                    <div className='workspace-layout__form'>
 
-                            <div className='resume-analyzer'>
+                            <div className='resume-analyzer' ref={formRef2}>
                                 <div className='resume-analyzer__upload-panel'>
                                     <div className='resume-analyzer__upload-area'>
+                                        <span className='detect-tag detect-tag--standalone'>AI · ATS Scan</span>
                                         <h2>Instant Resume Analysis</h2>
                                         <p>Upload your resume and get a detailed breakdown of ATS compatibility, impact language, clarity, and keyword density — in seconds.</p>
 
@@ -421,10 +512,10 @@ const Home = () => {
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                                                     </span>
                                                     <p className='dropzone__title'>Drop your resume here</p>
-                                                    <p className='dropzone__subtitle'>PDF or DOCX &bull; Max 5MB</p>
+                                                    <p className='dropzone__subtitle'>PDF &bull; Max 3MB</p>
                                                 </>
                                             )}
-                                            <input ref={analyzeInputRef} onChange={e => setAnalyzeFile(e.target.files[0] || null)} hidden type='file' id='analyze-resume' accept='.pdf,.docx' />
+                                            <input ref={analyzeInputRef} onChange={e => setAnalyzeFile(e.target.files[0] || null)} hidden type='file' id='analyze-resume' accept='.pdf' />
                                         </label>
 
                                         <button className='generate-btn generate-btn--full' disabled={!analyzeFile} onClick={handleAnalyzeResume}>
@@ -490,9 +581,7 @@ const Home = () => {
                                                     {item.seniority_level && <div className='history-item__tag'>{item.seniority_level}</div>}
                                                 </div>
                                                 <div className='history-item__score'>
-                                                    <span className={`score-badge ${item.overall >= 80 ? 'score-badge--high' : item.overall >= 60 ? 'score-badge--mid' : 'score-badge--low'}`}>
-                                                        {item.overall}%
-                                                    </span>
+                                                    <ScoreRing score={item.overall} />
                                                     <span className='history-item__score-label'>score</span>
                                                 </div>
                                                 <svg className='history-item__arrow' xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -504,6 +593,26 @@ const Home = () => {
                     </div>
                 </div>
             )}
+
+            {/* Project Flash Card */}
+            <section className='project-flashcard'>
+                <div className='project-flashcard__head'>
+                    <h2>Built with <span className='highlight'>HireSync.AI</span></h2>
+                    <p>Powerful AI features to accelerate your career journey</p>
+                </div>
+                <div className='project-flashcard__viewport'>
+                    <div className='project-flashcard__track'>
+                        {[...PROJECT_FEATURES, ...PROJECT_FEATURES].map((feature, i) => (
+                            <div key={`${feature.title}-${i}`} className={`feature-chip feature-chip--${feature.tint}`}>
+                                <span className='feature-chip__icon'>{feature.icon}</span>
+                                <h3>{feature.title}</h3>
+                                <p>{feature.desc}</p>
+                                <span className='feature-chip__tag'>{feature.tag}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             {/* Page Footer */}
             <footer className='page-footer'>

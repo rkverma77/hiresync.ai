@@ -1,24 +1,43 @@
 @use "./style/button.scss";
 
 // ── Theme tokens ─────────────────────────────────────────────────────────────
+// :root,
+// [data-theme="dark"] {
+//     --bg-page:      #0d1117;
+//     --bg-card:      #161b22;
+//     --bg-panel:     #1c2230;
+//     --bg-input:     #1e2535;
+//     --border-color: #2a3348;
+//     --text-primary: #e6edf3;
+//     --text-muted:   #7d8590;
+//     --accent:       #ff2d78;
+//     --accent-alt:   #ff6b9d;
+//     --info-bg:      #1b2a4a;
+//     --info-border:  #2d4a7a;
+//     --shadow:       rgba(0, 0, 0, 0.4);
+//     --body-bg:      #161616;
+//     --body-color:   whitesmoke;
+// }
+
 :root,
 [data-theme="dark"] {
-    --bg-page:      #0d1117;
-    --bg-card:      #161b22;
-    --bg-panel:     #1c2230;
-    --bg-input:     #1e2535;
-    --border-color: #2a3348;
-    --text-primary: #e6edf3;
-    --text-muted:   #7d8590;
-    --accent:       #ff2d78;
-    --accent-alt:   #ff6b9d;
-    --info-bg:      #1b2a4a;
-    --info-border:  #2d4a7a;
-    --shadow:       rgba(0, 0, 0, 0.4);
-    --body-bg:      #161616;
-    --body-color:   whitesmoke;
+    // Cohesive charcoal ladder + electric indigo accent
+    --bg-page:      #0d0d10;
+    --bg-card:      #17171b;
+    --bg-panel:     #1e1e24;
+    --bg-input:     #26262e;
+    --border-color: #34343e;
+    --text-primary: #f2f2f5;
+    --text-muted:   #9a9aa6;
+    --accent:       #6366f1;
+    --accent-alt:   #818cf8;
+    --on-accent:    #ffffff;
+    --info-bg:      #1a1a2e;
+    --info-border:  #6366f1;
+    --shadow:       rgba(0, 0, 0, 0.6);
+    --body-bg:      #0d0d10;
+    --body-color:   #f2f2f5;
 }
-
 [data-theme="light"] {
     --bg-page:      #f4f6fb;
     --bg-card:      #ffffff;
@@ -35,6 +54,8 @@
     --body-bg:      #f4f6fb;
     --body-color:   #1a1f2e;
 }
+
+
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
 * {

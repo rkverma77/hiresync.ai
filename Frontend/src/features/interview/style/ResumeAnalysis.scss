@@ -436,10 +436,49 @@
     flex-shrink: 0;
 }
 
+@keyframes ra-ring-fill-in {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .ra-ring {
     position: relative;
     width: 130px;
     height: 130px;
+    animation: ra-ring-fill-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--ring-clr) 45%, transparent));
+
+    &.score--high { --ring-clr: #3fb950; --ring-start: #{color-mix(in srgb, #3fb950 75%, white)}; --ring-end: #3fb950; }
+    &.score--mid  { --ring-clr: #f5a623; --ring-start: #{color-mix(in srgb, #f5a623 75%, white)}; --ring-end: #f5a623; }
+    &.score--low  { --ring-clr: #ff4d4d; --ring-start: #{color-mix(in srgb, #ff4d4d 70%, white)}; --ring-end: #ff4d4d; }
+
+    &__svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    &__track {
+        fill: none;
+        stroke: color-mix(in srgb, var(--border-color) 85%, transparent);
+        stroke-width: 9;
+    }
+
+    &__progress {
+        fill: none;
+        stroke: url(#raScoreGradient);
+        stroke-width: 9;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
 
     &__value {
         position: absolute;

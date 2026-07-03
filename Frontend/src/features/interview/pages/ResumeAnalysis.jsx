@@ -192,8 +192,12 @@ const ResumeAnalysis = () => {
         )
     }
 
-    const ringColor = analysis.overall >= 75 ? '#3fb950' : analysis.overall >= 50 ? '#f5a623' : '#ff4d4d'
-    const circumference = 2 * Math.PI * 42
+    const scoreColor =
+        analysis.overall >= 75 ? 'score--high' :
+            analysis.overall >= 50 ? 'score--mid' : 'score--low'
+    const RING_RADIUS = 52
+    const circumference = 2 * Math.PI * RING_RADIUS
+    const ringOffset = circumference * (1 - Math.min(Math.max(analysis.overall, 0), 100) / 100)
 
     return (
         <div className='ra-page'>
@@ -266,15 +270,20 @@ const ResumeAnalysis = () => {
 
                     <div className='ra-card ra-scores'>
                         <div className='ra-ring-wrap'>
-                            <div className='ra-ring'>
-                                <svg viewBox="0 0 100 100" width="130" height="130">
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#2a3348" strokeWidth="10" />
-                                    <circle cx="50" cy="50" r="42" fill="none"
-                                        stroke={ringColor}
-                                        strokeWidth="10"
-                                        strokeDasharray={`${circumference * analysis.overall / 100} ${circumference}`}
-                                        strokeDashoffset={circumference * 0.25}
-                                        strokeLinecap="round"
+                            <div className={`ra-ring ${scoreColor}`}>
+                                <svg className='ra-ring__svg' viewBox="0 0 120 120">
+                                    <defs>
+                                        <linearGradient id="raScoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="var(--ring-start)" />
+                                            <stop offset="100%" stopColor="var(--ring-end)" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle className='ra-ring__track' cx="60" cy="60" r={RING_RADIUS} />
+                                    <circle
+                                        className='ra-ring__progress'
+                                        cx="60" cy="60" r={RING_RADIUS}
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={ringOffset}
                                     />
                                 </svg>
                                 <div className='ra-ring__value'>

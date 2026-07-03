@@ -1,10 +1,11 @@
-import React,{useState} from 'react'
+import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
 import "../auth.form.scss"
 import { useAuth } from '../hooks/useAuth'
 import ProgressBar from '../../../components/ProgressBar.jsx'
 import { useFakeProgress } from '../../../hooks/useFakeProgress.js'
-import ThemeToggle from '../../theme/ThemeToggle.jsx'
+import AuthLayout from '../components/AuthLayout.jsx'
+import AuthInput from '../components/AuthInput.jsx'
 
 const CONNECT_MESSAGES = [
     "Connecting to server...",
@@ -25,7 +26,7 @@ const Register = () => {
         duration: 18000,
         messages: CONNECT_MESSAGES,
     })
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         await handleRegister({username,email,password})
@@ -48,41 +49,50 @@ const Register = () => {
     }
 
     return (
-        <main className='auth-form'>
-            <div className="auth-theme-toggle">
-                <ThemeToggle />
-            </div>
-            <div className="form-container">
-                <h1>Register</h1>
+        <AuthLayout
+            mode="register"
+            brandLine="Let's build your edge."
+            title="Create your account"
+            subtitle="Set up mock interviews tailored to the role you're chasing."
+        >
+            <form onSubmit={handleSubmit}>
+                <AuthInput
+                    id="username"
+                    label="Username"
+                    type="text"
+                    kind="user"
+                    autoComplete="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+                <AuthInput
+                    id="email"
+                    label="Email address"
+                    type="email"
+                    kind="mail"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+                <AuthInput
+                    id="password"
+                    label="Password"
+                    type="password"
+                    kind="lock"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
 
-                <form onSubmit={handleSubmit}>
+                <button className="button primary-button auth-submit" type="submit">
+                    Create account
+                </button>
+            </form>
 
-                    <div className="input-group">
-                        <label htmlFor="username">Username</label>
-                        <input
-                            onChange={(e) => { setUsername(e.target.value) }}
-                            type="text" id="username" name='username' placeholder='Enter username' />
-                    </div>
-                    <div className="input-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            onChange={(e) => { setEmail(e.target.value) }}
-                            type="email" id="email" name='email' placeholder='Enter email address' />
-                    </div>
-                    <div className="input-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            onChange={(e) => { setPassword(e.target.value) }}
-                            type="password" id="password" name='password' placeholder='Enter password' />
-                    </div>
-
-                    <button className='button primary-button' >Register</button>
-
-                </form>
-
-                <p>Already have an account? <Link to={"/login"} >Login</Link> </p>
-            </div>
-        </main>
+            <p className="auth-card__foot">
+                Already have an account? <Link to="/login">Sign in</Link>
+            </p>
+        </AuthLayout>
     )
 }
 

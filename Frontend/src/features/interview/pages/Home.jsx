@@ -152,7 +152,10 @@ const Home = () => {
             }
         }
         // Measure synchronously before the browser paints — avoids the
-        // one-frame flash of the old height on tab switch / reload.
+        // one-frame flash of the old height on tab switch / reload, and
+        // also avoids relying solely on the async ResizeObserver below
+        // (which can lag a frame and let new content get clipped by the
+        // wrapper's overflow:hidden while it catches up).
         syncHeight()
 
         let rafId
@@ -168,7 +171,7 @@ const Home = () => {
             resizeObserver.disconnect()
             window.removeEventListener('resize', syncHeight)
         }
-    }, [activeTab])
+    }, [activeTab, resumeFile, analyzeFile, generateError, analyzeError])
 
     React.useEffect(() => {
         getAnalysisHistory()
@@ -339,11 +342,13 @@ const Home = () => {
                                         <div className='char-counter'>{jobDescCount} / 5000</div>
                                     </div>
                                     <div className='detect-row'>
-                                        <span className='detect-row__label'>Auto-detects:</span>
-                                        <span className='detect-tag'>Role</span>
-                                        <span className='detect-tag'>Seniority</span>
-                                        <span className='detect-tag'>Must-have skills</span>
-                                        <span className='detect-tag'>Tech stack</span>
+                                        <span className='detect-row__label'>Auto-detects</span>
+                                        <div className='detect-row__tags'>
+                                            <span className='detect-tag'>Role</span>
+                                            <span className='detect-tag'>Seniority</span>
+                                            <span className='detect-tag'>Must-have skills</span>
+                                            <span className='detect-tag'>Tech stack</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -431,7 +436,7 @@ const Home = () => {
 
                             {/* Card Footer */}
                             <div className='interview-card__footer'>
-                                <span className='footer-info'>AI-Powered Strategy Generation &bull; Approx 30s</span>
+                                <span className='footer-info'>AI-Powered Strategy Generation &bull; Approx 1&ndash;2 min</span>
                                 <button onClick={handleGenerateReport} className='generate-btn' disabled={!jobDescription.trim() || (!resumeFile && !selfDescription.trim())}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" /></svg>
                                     Generate My Interview Strategy

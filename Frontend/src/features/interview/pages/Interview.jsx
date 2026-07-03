@@ -25,6 +25,54 @@ const RESOURCE_TYPE_LABEL = {
     practice: 'Practice',
 }
 
+// ── Resume section parser (mirrors Resume Analysis page) ──────────────────────
+const SECTION_HEADER_RE = /^(EDUCATION|EXPERIENCE|WORK EXPERIENCE|SKILLS|TECHNICAL SKILLS|PROJECTS|SUMMARY|OBJECTIVE|CERTIFICATIONS|AWARDS|PUBLICATIONS|LANGUAGES|CONTACT|PROFILE|ACHIEVEMENTS|EXTRACURRICULAR|INTERNSHIP|INTERNSHIPS|ACTIVITIES|HONORS|REFERENCES|COURSEWORK|TRAINING|VOLUNTEER)S?$/i
+
+function parseResumeIntoSections(text) {
+    const lines = text.split('\n')
+    const sections = []
+    let current = { label: null, lines: [], bullets: [] }
+
+    const flushCurrent = () => {
+        if (current.lines.length || current.bullets.length || current.label) {
+            sections.push({ ...current })
+        }
+    }
+
+    lines.forEach(raw => {
+        const line = raw.trim()
+        if (!line) return
+
+        const bulletMatch = line.match(/^[-•*▸]\s+(.+)/) || line.match(/^\d+\.\s+(.+)/)
+        if (bulletMatch) {
+            current.bullets.push(bulletMatch[1])
+            return
+        }
+
+        const isHeader =
+            (line === line.toUpperCase() && line.length > 2 && line.length < 60 && /[A-Z]/.test(line) && SECTION_HEADER_RE.test(line.replace(/:$/, ''))) ||
+            (line.endsWith(':') && line.length < 60 && SECTION_HEADER_RE.test(line.replace(/:$/, '')))
+
+        if (isHeader) {
+            flushCurrent()
+            current = { label: line.replace(/:$/, ''), lines: [], bullets: [] }
+        } else {
+            if (current.bullets.length) {
+                current.lines.push({ type: 'bullets', items: [...current.bullets] })
+                current.bullets = []
+            }
+            current.lines.push({ type: 'text', value: line })
+        }
+    })
+
+    if (current.bullets.length) {
+        current.lines.push({ type: 'bullets', items: [...current.bullets] })
+        current.bullets = []
+    }
+    flushCurrent()
+    return sections
+}
+
 // ── Markdown renderer ─────────────────────────────────────────────────────────
 /**
  * Converts a small subset of Markdown to React elements:
@@ -379,6 +427,10 @@ const Interview = () => {
         report.matchScore >= 40 ? 'Weak match — consider upskilling first' :
         'Low match — role may not align with your profile'
 
+    const RING_RADIUS = 52
+    const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+    const ringOffset = RING_CIRCUMFERENCE * (1 - Math.min(Math.max(report.matchScore, 0), 100) / 100)
+
     return (
         <div className='interview-page'>
             <div className='interview-layout'>
@@ -541,37 +593,50 @@ const Interview = () => {
                             {activePanel === 'resume' && report.resume && (
                                 <div className='interview-jd-panel__body'>
                                     {(() => {
-                                        const lines = report.resume.split('\n')
-                                        const elements = []
-                                        let bulletBuffer = []
-                                        const flushBullets = (key) => {
-                                            if (bulletBuffer.length === 0) return
-                                            elements.push(
-                                                <ul key={`ul-${key}`} className='interview-jd-panel__bullets'>
-                                                    {bulletBuffer.map((b, j) => <li key={j}>{b}</li>)}
+                                        const sections = parseResumeIntoSections(report.resume)
+                                        const contactBlock = sections[0]?.label === null ? sections[0] : null
+                                        const mainSections = contactBlock ? sections.slice(1) : sections
+
+                                        const renderLines = (lines, keyPrefix) => lines.map((item, i) => {
+                                            if (item.type === 'text') {
+                                                return <p key={`${keyPrefix}-${i}`} className='interview-jd-panel__line'>{item.value}</p>
+                                            }
+                                            return (
+                                                <ul key={`${keyPrefix}-${i}`} className='interview-jd-panel__bullets'>
+                                                    {item.items.map((b, j) => <li key={j}>{b}</li>)}
                                                 </ul>
                                             )
-                                            bulletBuffer = []
-                                        }
-                                        lines.forEach((line, i) => {
-                                            const trimmed = line.trim()
-                                            if (!trimmed) return
-                                            const bulletMatch = trimmed.match(/^[-•*]\s+(.+)/) || trimmed.match(/^\d+\.\s+(.+)/)
-                                            if (bulletMatch) { bulletBuffer.push(bulletMatch[1]); return }
-                                            flushBullets(i)
-                                            // Resume headers: ALL CAPS lines, or short lines with no sentence punctuation
-                                            const isHeader =
-                                                (trimmed === trimmed.toUpperCase() && trimmed.length > 2 && trimmed.length < 60 && /[A-Z]/.test(trimmed)) ||
-                                                (trimmed.endsWith(':') && trimmed.length < 60) ||
-                                                /^(Experience|Education|Skills|Projects|Summary|Objective|Certifications|Awards|Publications|Languages|Contact|Profile|Work History|Technical Skills|Achievements)/i.test(trimmed) && trimmed.length < 60
-                                            if (isHeader) {
-                                                elements.push(<p key={i} className='interview-jd-panel__section-header'>{trimmed.replace(/:$/, '')}</p>)
-                                            } else {
-                                                elements.push(<p key={i} className='interview-jd-panel__line'>{trimmed}</p>)
-                                            }
                                         })
-                                        flushBullets('end')
-                                        return elements
+
+                                        return (
+                                            <>
+                                                {contactBlock && (
+                                                    <div className='interview-jd-panel__section'>
+                                                        {contactBlock.lines.map((item, i) => {
+                                                            if (item.type === 'text') {
+                                                                const isName = i === 0
+                                                                return isName
+                                                                    ? <p key={i} className='interview-jd-panel__name'>{item.value}</p>
+                                                                    : <p key={i} className='interview-jd-panel__contact'>{item.value}</p>
+                                                            }
+                                                            return (
+                                                                <ul key={i} className='interview-jd-panel__bullets'>
+                                                                    {item.items.map((b, j) => <li key={j}>{b}</li>)}
+                                                                </ul>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {mainSections.map((section, si) => (
+                                                    <div key={si} className='interview-jd-panel__section'>
+                                                        {section.label && (
+                                                            <p className='interview-jd-panel__section-header'>{section.label}</p>
+                                                        )}
+                                                        {renderLines(section.lines, si)}
+                                                    </div>
+                                                ))}
+                                            </>
+                                        )
                                     })()}
                                 </div>
                             )}
@@ -584,42 +649,69 @@ const Interview = () => {
                 <aside className='interview-sidebar'>
 
                     {/* Match Score */}
-                    <div className='match-score'>
-                        <p className='match-score__label'>Match Score</p>
-                        <div className={`match-score__ring ${scoreColor}`}>
-                            <span className='match-score__value'>{report.matchScore}</span>
-                            <span className='match-score__pct'>%</span>
+                    <div className='sidebar-card sidebar-card--score'>
+                        <div className='sidebar-card__header'>
+                            <span className='sidebar-card__icon'>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                            </span>
+                            <p className='sidebar-card__title'>Match Score</p>
                         </div>
-                        <p className='match-score__sub'>{scoreMessage}</p>
+                        <div className='match-score'>
+                            <div className={`match-score__ring ${scoreColor}`}>
+                                <svg className='match-score__svg' viewBox='0 0 120 120'>
+                                    <defs>
+                                        <linearGradient id='matchScoreGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+                                            <stop offset='0%' stopColor='var(--ring-start)' />
+                                            <stop offset='100%' stopColor='var(--ring-end)' />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle className='match-score__track' cx='60' cy='60' r={RING_RADIUS} />
+                                    <circle
+                                        className='match-score__progress'
+                                        cx='60' cy='60' r={RING_RADIUS}
+                                        strokeDasharray={RING_CIRCUMFERENCE}
+                                        strokeDashoffset={ringOffset}
+                                    />
+                                </svg>
+                                <div className='match-score__center'>
+                                    <span className='match-score__value'>{report.matchScore}</span>
+                                    <span className='match-score__pct'>%</span>
+                                </div>
+                            </div>
+                            <p className='match-score__sub'>{scoreMessage}</p>
+                        </div>
                     </div>
-
-                    <div className='sidebar-divider' />
 
                     {/* Skill Gaps */}
-                    <div className='skill-gaps'>
-                        <p className='skill-gaps__label'>Skill Gaps</p>
-                        <div className='skill-gaps__list'>
-                            {report.skillGaps.map((gap, i) => (
-                                <button
-                                    key={i}
-                                    type='button'
-                                    className={`skill-tag skill-tag--${gap.severity}`}
-                                    onClick={() => {
-                                        setActiveNav('resources')
-                                        requestAnimationFrame(() => {
-                                            document.getElementById(`skill-gap-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                                        })
-                                    }}
-                                    title='View learning resources for this skill'
-                                >
-                                    {gap.skill}
-                                </button>
-                            ))}
+                    <div className='sidebar-card'>
+                        <div className='sidebar-card__header'>
+                            <span className='sidebar-card__icon'>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                            </span>
+                            <p className='sidebar-card__title'>Skill Gaps</p>
                         </div>
-                        <p className='skill-gaps__hint'>Tap a skill to see resources to learn it</p>
+                        <div className='skill-gaps'>
+                            <div className='skill-gaps__list'>
+                                {report.skillGaps.map((gap, i) => (
+                                    <button
+                                        key={i}
+                                        type='button'
+                                        className={`skill-tag skill-tag--${gap.severity}`}
+                                        onClick={() => {
+                                            setActiveNav('resources')
+                                            requestAnimationFrame(() => {
+                                                document.getElementById(`skill-gap-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                            })
+                                        }}
+                                        title='View learning resources for this skill'
+                                    >
+                                        {gap.skill}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className='skill-gaps__hint'>Tap a skill to see resources to learn it</p>
+                        </div>
                     </div>
-
-                    <div className='sidebar-divider' />
 
                     {/* Career Path Quick Nav */}
                     <div className='sidebar-career-cta' onClick={() => setActiveNav('career')}>
@@ -631,8 +723,6 @@ const Interview = () => {
                             <p className='sidebar-career-cta__sub'>See your growth plan →</p>
                         </div>
                     </div>
-
-                    <div className='sidebar-divider' />
 
                     {/* Action Buttons */}
                     <div className='sidebar-spacer' />

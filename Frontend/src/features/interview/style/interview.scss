@@ -17,7 +17,7 @@ $severity-low: #3fb950;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     display: flex;
     align-items: stretch;
-    padding: 0;
+    padding: 1.1rem;
     box-sizing: border-box;
 }
 
@@ -42,68 +42,118 @@ $severity-low: #3fb950;
     width: 100%;
     max-width: 100%;
     margin: 0;
-    background-color: var(--bg-card);
+    background-color: transparent;
     border: none;
     border-radius: 0;
     justify-content: space-between;
-    min-height: 100vh;
+    align-items: stretch;
+    min-height: calc(100vh - 2.2rem);
+    gap: 1.1rem;
 }
 
 .interview-divider {
-    width: 1px;
-    background-color: var(--border-color);
-    flex-shrink: 0;
+    display: none;
 }
 
 // ── Left Nav ─────────────────────────────────────────────────────────────────
 .interview-nav {
-    width: 200px;
+    width: 216px;
     flex-shrink: 0;
-    padding: 1.75rem 1rem;
+    padding: 1.5rem 0.85rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.3rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, transparent), var(--bg-card) 180px);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    position: sticky;
+    top: 1.1rem;
+    align-self: flex-start;
+    max-height: calc(100vh - 2.2rem);
+    overflow-y: auto;
+    scrollbar-width: none;
 
-
-
+    &::-webkit-scrollbar { display: none; }
 
     &__label {
-        font-size: 0.7rem;
-        font-weight: 600;
+        font-size: 0.68rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
         color: var(--text-muted);
-        padding: 0 0.75rem;
-        margin-bottom: 0.5rem;
+        padding: 0 0.9rem 0.75rem;
+        margin-bottom: 0.4rem;
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0.9rem;
+            right: 0.9rem;
+            bottom: 0;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border-color), transparent);
+        }
     }
 
     &__item {
         display: flex;
         align-items: center;
-        gap: 0.6rem;
+        gap: 0.7rem;
         width: 100%;
-        padding: 0.65rem 0.75rem;
+        padding: 0.6rem 0.75rem;
         background: none;
         border: none;
-        border-radius: 0.5rem;
+        border-radius: 0.7rem;
         color: var(--text-muted);
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 0.875rem;
+        font-size: 0.86rem;
+        font-weight: 500;
         cursor: pointer;
         text-align: left;
-        transition: background-color 0.15s, color 0.15s;
+        position: relative;
+        transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 
         &:hover {
             background-color: var(--bg-panel);
             color: var(--text-primary);
+            transform: translateX(2px);
+
+            .interview-nav__icon {
+                color: var(--text-primary);
+                background-color: color-mix(in srgb, var(--text-primary) 8%, transparent);
+            }
         }
 
         &--active {
-            background-color: rgba(var(--accent), 0.1);
+            background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 5%, transparent));
             color: var(--accent);
+            font-weight: 600;
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
 
-            .interview-nav__icon svg {
-                stroke: var(--accent);
+            &::before {
+                content: '';
+                position: absolute;
+                left: -0.85rem;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 3px;
+                height: 60%;
+                border-radius: 0 3px 3px 0;
+                background: var(--accent);
+            }
+
+            &:hover {
+                transform: none;
+            }
+
+            .interview-nav__icon {
+                color: var(--accent);
+                background-color: color-mix(in srgb, var(--accent) 14%, transparent);
+
+                svg {
+                    stroke: var(--accent);
+                }
             }
         }
     }
@@ -111,7 +161,14 @@ $severity-low: #3fb950;
     &__icon {
         display: flex;
         align-items: center;
+        justify-content: center;
         flex-shrink: 0;
+        width: 26px;
+        height: 26px;
+        border-radius: 0.5rem;
+        color: var(--text-muted);
+        background-color: color-mix(in srgb, var(--text-muted) 8%, transparent);
+        transition: background-color 0.18s ease, color 0.18s ease;
     }
 }
 
@@ -122,8 +179,11 @@ $severity-low: #3fb950;
     padding: 1.75rem 1.5rem 5rem 1.5rem;
     overflow-y: auto;
     min-height: initial;
-    max-height: 100vh;
+    max-height: calc(100vh - 2.2rem);
     align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
 
@@ -381,15 +441,64 @@ $severity-low: #3fb950;
 
 // ── Right Sidebar ─────────────────────────────────────────────────────────────
 .interview-sidebar {
-    width: 260px;
+    width: 276px;
     flex-shrink: 0;
-    padding: 1.75rem 1.25rem 1.25rem;
+    padding: 1.5rem 1.1rem 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.9rem;
     overflow-y: auto;
-    max-height: 100vh;
-    border-left: 1px solid var(--border-color);
+    max-height: calc(100vh - 2.2rem);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 3%, transparent), var(--bg-card) 220px);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 99px; }
+}
+
+// ── Sidebar Card Shell ───────────────────────────────────────────────────────
+.sidebar-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.1rem;
+    border-radius: 0.85rem;
+    background: color-mix(in srgb, var(--bg-panel) 60%, transparent);
+    border: 1px solid var(--border-color);
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 0.4rem;
+        color: var(--accent);
+        background-color: color-mix(in srgb, var(--accent) 14%, transparent);
+        flex-shrink: 0;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--text-muted);
+    }
+
+    &--score {
+        background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 6%, var(--bg-panel)), color-mix(in srgb, var(--bg-panel) 70%, transparent));
+    }
 }
 
 .sidebar-divider {
@@ -397,64 +506,98 @@ $severity-low: #3fb950;
     background-color: var(--border-color);
 }
 
-// Match Score
+@keyframes ring-fill-in {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ring-draw {
+    from {
+        stroke-dashoffset: var(--ring-circumference);
+    }
+}
+
+// ── Match Score — modern SVG circular progress ring ───────────────────────────
 .match-score {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-
-    &__label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-muted);
-        margin: 0;
-        align-self: flex-start;
-    }
+    gap: 0.75rem;
 
     &__ring {
-        width: 90px;
-        height: 90px;
-        border-radius: 50%;
+        position: relative;
+        width: 132px;
+        height: 132px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: ring-fill-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        filter: drop-shadow(0 0 14px color-mix(in srgb, var(--ring-clr) 45%, transparent));
+
+        &.score--high { --ring-clr: #{$severity-low}; --ring-start: #{color-mix(in srgb, $severity-low 75%, white)}; --ring-end: #{$severity-low}; }
+        &.score--mid { --ring-clr: #{$severity-medium}; --ring-start: #{color-mix(in srgb, $severity-medium 75%, white)}; --ring-end: #{$severity-medium}; }
+        &.score--low { --ring-clr: #{$severity-high}; --ring-start: #{color-mix(in srgb, $severity-high 70%, white)}; --ring-end: #{$severity-high}; }
+    }
+
+    &__svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    &__track {
+        fill: none;
+        stroke: color-mix(in srgb, var(--border-color) 85%, transparent);
+        stroke-width: 9;
+    }
+
+    &__progress {
+        fill: none;
+        stroke: url(#matchScoreGradient);
+        stroke-width: 9;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    &__center {
+        position: relative;
+        z-index: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        border: 4px solid;
-
-        &.score--high {
-            border-color: $severity-low;
-        }
-
-        &.score--mid {
-            border-color: $severity-medium;
-        }
-
-        &.score--low {
-            border-color: $severity-high;
-        }
     }
 
     &__value {
-        font-size: 1.6rem;
+        font-size: 2rem;
         font-weight: 800;
         color: var(--text-primary);
         line-height: 1;
+        letter-spacing: -0.02em;
     }
 
     &__pct {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 600;
         color: var(--text-muted);
-        margin-top: -2px;
+        margin-top: 1px;
     }
 
     &__sub {
         margin: 0;
-        font-size: 0.75rem;
-        color: $severity-low;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--ring-clr, $severity-low);
         text-align: center;
+        line-height: 1.4;
     }
 }
 
@@ -462,58 +605,49 @@ $severity-low: #3fb950;
 .skill-gaps {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-
-    &__label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-muted);
-        margin: 0;
-    }
+    gap: 0.7rem;
 
     &__list {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.45rem;
     }
 
     &__hint {
         margin: 0;
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         color: var(--text-muted);
         font-style: italic;
     }
 }
 
 .skill-tag {
-    font-size: 0.775rem;
-    font-weight: 500;
-    padding: 0.3rem 0.7rem;
-    border-radius: 0.4rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.32rem 0.7rem;
+    border-radius: 0.5rem;
     border: 1px solid;
     cursor: default;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: none;
-    transition: filter 0.15s, transform 0.1s;
+    transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
     &--high {
         color: $severity-high;
-        background-color: rgba($severity-high, 0.1);
-        border-color: rgba($severity-high, 0.25);
+        background-color: color-mix(in srgb, $severity-high 12%, transparent);
+        border-color: color-mix(in srgb, $severity-high 30%, transparent);
     }
 
     &--medium {
         color: $severity-medium;
-        background-color: rgba($severity-medium, 0.1);
-        border-color: rgba($severity-medium, 0.25);
+        background-color: color-mix(in srgb, $severity-medium 12%, transparent);
+        border-color: color-mix(in srgb, $severity-medium 30%, transparent);
     }
 
     &--low {
         color: $severity-low;
-        background-color: rgba($severity-low, 0.1);
-        border-color: rgba($severity-low, 0.25);
+        background-color: color-mix(in srgb, $severity-low 12%, transparent);
+        border-color: color-mix(in srgb, $severity-low 30%, transparent);
     }
 }
 
@@ -521,13 +655,16 @@ button.skill-tag {
     cursor: pointer;
 
     &:hover {
-        filter: brightness(1.25);
+        filter: brightness(1.2);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
     }
 
     &:active {
         transform: scale(0.97);
     }
 }
+
 
 // ── Skill Gap / Resources Cards ──────────────────────────────────────────────
 .skill-gap-list {
@@ -654,10 +791,10 @@ button.skill-tag {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 0.1rem 0.4rem;
+    padding: 0.15rem 0.45rem;
     border-radius: 2rem;
-    background-color: rgba(var(--accent), 0.2);
-    border: 1px solid rgba(var(--accent), 0.4);
+    background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
     color: var(--accent);
 }
 
@@ -666,24 +803,26 @@ button.skill-tag {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 0.85rem;
-    background: linear-gradient(135deg, rgba(var(--accent), 0.08), rgba(var(--accent), 0.04));
-    border: 1px solid rgba(var(--accent), 0.2);
-    border-radius: 0.6rem;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-        background: linear-gradient(135deg, rgba(var(--accent), 0.14), rgba(var(--accent), 0.08));
-        border-color: rgba(var(--accent), 0.4);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 8%, transparent));
+        border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 18%, transparent);
     }
 
     &__icon {
         flex-shrink: 0;
-        width: 32px;
-        height: 32px;
-        border-radius: 0.4rem;
-        background-color: rgba(var(--accent), 0.15);
+        width: 34px;
+        height: 34px;
+        border-radius: 0.55rem;
+        background-color: color-mix(in srgb, var(--accent) 16%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1124,7 +1263,7 @@ button.skill-tag {
         width: 100%;
         justify-content: center;
         padding: 0.55rem 0.75rem;
-        border-radius: 0.5rem;
+        border-radius: 0.65rem;
     }
 
     .secondary-button {
@@ -1132,8 +1271,8 @@ button.skill-tag {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.55rem 0.75rem;
-        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.65rem;
         border: 1px solid var(--border-color);
         background: transparent;
         color: var(--text-muted);
@@ -1141,16 +1280,24 @@ button.skill-tag {
         font-weight: 500;
         cursor: pointer;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        transition: background 0.15s, color 0.15s;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 
         &:hover {
             background: var(--bg-panel);
             color: var(--text-primary);
+            transform: translateY(-1px);
         }
     }
 
     .primary-button {
         width: 100%;
+        border-radius: 0.65rem;
+        transition: transform 0.15s ease, filter 0.15s ease;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+        }
     }
 
     .logout-button {
@@ -1158,8 +1305,8 @@ button.skill-tag {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.55rem 0.75rem;
-        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.65rem;
         border: 1px solid #3a1a1a;
         background: transparent;
         color: #e05555;
@@ -1167,11 +1314,12 @@ button.skill-tag {
         font-weight: 500;
         cursor: pointer;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        transition: background 0.15s, color 0.15s;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 
         &:hover {
             background: #2a1010;
             color: #ff6b6b;
+            transform: translateY(-1px);
         }
     }
 }
@@ -1302,9 +1450,12 @@ button.skill-tag {
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 1.5rem 1rem 1rem;
+    padding: 1.25rem 1rem 1rem;
     overflow: hidden;
-    max-height: 100vh;
+    max-height: calc(100vh - 2.2rem);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
 
     &__label {
         font-size: 0.7rem;
@@ -1347,19 +1498,49 @@ button.skill-tag {
     }
 
     &__section-header {
-        font-size: 0.72rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
         color: var(--accent);
         margin-top: 1rem;
-        margin-bottom: 0.25rem;
-        padding-bottom: 0.25rem;
-        border-bottom: 1px solid rgba(var(--accent), 0.15);
+        margin-bottom: 0.5rem;
+
+        &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: color-mix(in srgb, var(--accent) 18%, transparent);
+        }
 
         &:first-child {
             margin-top: 0;
         }
+    }
+
+    &__section {
+        margin-bottom: 0.6rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 0.2rem;
+    }
+
+    &__contact {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin: 0 0 0.1rem;
+        line-height: 1.5;
     }
 
     &__line {

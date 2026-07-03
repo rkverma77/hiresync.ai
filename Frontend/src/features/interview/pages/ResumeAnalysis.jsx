@@ -4,12 +4,36 @@ import '../style/ResumeAnalysis.scss'
 import { useAuth } from '../../auth/hooks/useAuth.js'
 import ThemeToggle from '../../theme/ThemeToggle.jsx'
 
+const METRIC_INFO = {
+    'ATS Compatibility': 'How cleanly this resume would parse through Applicant Tracking Systems — simple layout, standard fonts, no tables or graphics that confuse a parser.',
+    'Impact Language': 'Use of strong action verbs and quantifiable outcomes (numbers, %, results) instead of vague, passive descriptions.',
+    'Clarity & Structure': 'How logically the resume is organized and how easy it is for a human reader to scan in a few seconds.',
+    'Keyword Density': 'Presence of role- and industry-relevant keywords that recruiters and ATS filters commonly search for.',
+    'Section Completeness': 'Whether standard sections — education, experience, skills, projects — are all present and filled in.',
+    'Formatting Quality': 'Consistency of fonts, spacing, bullet styles, and date formats throughout the document.',
+    'Seniority Alignment': "How well the resume's tone, scope, and achievements match the seniority level it's presenting as.",
+}
+
+const InfoTip = ({ text }) => (
+    <span className='ra-infotip' tabIndex={0}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        <span className='ra-infotip__bubble'>{text}</span>
+    </span>
+)
+
 const ATSMeter = ({ score, label }) => {
     const color = score >= 75 ? '#3fb950' : score >= 50 ? '#f5a623' : '#ff4d4d'
     return (
         <div className='ra-meter'>
             <div className='ra-meter__row'>
-                <span className='ra-meter__label'>{label}</span>
+                <span className='ra-meter__label'>
+                    {label}
+                    {METRIC_INFO[label] && <InfoTip text={METRIC_INFO[label]} />}
+                </span>
                 <span className='ra-meter__score' style={{ color }}>{score}%</span>
             </div>
             <div className='ra-meter__track'>
@@ -203,11 +227,41 @@ const ResumeAnalysis = () => {
                         <div className='ra-verdict'>"{analysis.one_line_verdict}"</div>
                     )}
 
-                    <div className='ra-tags'>
-                        {analysis.seniority_level && <span className='ra-tag ra-tag--accent'>{analysis.seniority_level}</span>}
-                        {analysis.estimated_yoe != null && <span className='ra-tag ra-tag--blue'>{analysis.estimated_yoe} yrs exp</span>}
-                        {(analysis.industry_fit || []).map((ind, i) => <span key={i} className='ra-tag ra-tag--green'>{ind}</span>)}
-                        {(analysis.top_skills || []).map((sk, i) => <span key={i} className='ra-tag ra-tag--default'>{sk}</span>)}
+                    <div className='ra-tag-groups'>
+                        {(analysis.seniority_level || analysis.estimated_yoe != null) && (
+                            <div className='ra-tag-group'>
+                                <span className='ra-tag-group__label'>
+                                    Profile
+                                    <InfoTip text="The candidate's seniority level and estimated years of experience, inferred from the resume's projects and roles." />
+                                </span>
+                                <div className='ra-tags'>
+                                    {analysis.seniority_level && <span className='ra-tag ra-tag--accent'>{analysis.seniority_level}</span>}
+                                    {analysis.estimated_yoe != null && <span className='ra-tag ra-tag--blue'>{analysis.estimated_yoe} yrs exp</span>}
+                                </div>
+                            </div>
+                        )}
+                        {(analysis.industry_fit || []).length > 0 && (
+                            <div className='ra-tag-group'>
+                                <span className='ra-tag-group__label'>
+                                    Industry Fit
+                                    <InfoTip text="Industries and domains this resume's skills and project experience align well with." />
+                                </span>
+                                <div className='ra-tags'>
+                                    {analysis.industry_fit.map((ind, i) => <span key={i} className='ra-tag ra-tag--green'>{ind}</span>)}
+                                </div>
+                            </div>
+                        )}
+                        {(analysis.top_skills || []).length > 0 && (
+                            <div className='ra-tag-group'>
+                                <span className='ra-tag-group__label'>
+                                    Top Skills
+                                    <InfoTip text="The most prominent technical skills and tools detected across the resume." />
+                                </span>
+                                <div className='ra-tags'>
+                                    {analysis.top_skills.map((sk, i) => <span key={i} className='ra-tag ra-tag--default'>{sk}</span>)}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className='ra-card ra-scores'>
@@ -228,7 +282,10 @@ const ResumeAnalysis = () => {
                                     <span className='ra-ring__denom'>/ 100</span>
                                 </div>
                             </div>
-                            <p className='ra-ring__label'>Overall Score</p>
+                            <p className='ra-ring__label'>
+                                Overall Score
+                                <InfoTip text="A weighted average of all the criteria to the right — ATS compatibility, impact language, clarity, keywords, completeness, formatting, and seniority alignment." />
+                            </p>
                         </div>
                         <div className='ra-sub-scores'>
                             <ATSMeter score={analysis.ats} label="ATS Compatibility" />
